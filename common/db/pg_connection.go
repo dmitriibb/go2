@@ -43,7 +43,6 @@ func UseConnection(f func(db *sql.DB) any) any {
 	logger.Debug("db connection open")
 	defer func() {
 		connection.Close()
-		//fmt.Println("db connection close")
 		logger.Debug("db connection close")
 	}()
 	err = connection.Ping()
@@ -52,4 +51,15 @@ func UseConnection(f func(db *sql.DB) any) any {
 	}
 	logger.Debug("execute sql")
 	return f(connection)
+}
+func GetConnection() *sql.DB {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	connection, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	logger.Debug("db connection open")
+	return connection
 }
