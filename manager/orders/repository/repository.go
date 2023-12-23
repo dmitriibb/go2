@@ -7,6 +7,7 @@ import (
 	"dmbb.com/go2/common/model"
 	"fmt"
 	"strings"
+	"time"
 )
 
 var logger = logging.NewLogger("ordersRepository")
@@ -45,4 +46,35 @@ func SaveOrderItemInDb(order *model.OrderItem) {
 		return res
 	}
 	db.UseConnection(f)
+}
+
+func SaveOrderDishItemInDb(dishItem *model.OrderDishItem) int {
+	query := `insert into order_dish_items (order_id, client_id, dish_name, time_created, status) 
+		values ($1, $2, $3, $4, $5) 
+		returning id`
+	var id int
+	db.UseConnection(func(db *sql.DB) any {
+		row := db.QueryRow(query, dishItem.OrderId, dishItem.ClientId, dishItem.DishName, dishItem.TimeCreated, dishItem.Status)
+		err := row.Scan(&id)
+		if err != nil {
+			logger.Error(fmt.Sprintf("Cant save order dish item - %v", err))
+			panic(fmt.Sprintf("Cant save order dish item - %v", err))
+			return -1
+		}
+		logger.Debug(fmt.Sprintf("Order dish item saved - %v", dishItem))
+		return 1
+	})
+	return id
+}
+
+func SaveOrderDishItemStatus(itemId int, timestamp time.Time, status model.OrderDishItemStatus) {
+	query := "insert into order_dish_item_statuses(order_dish_item_id, timestamp, status) values ($1, $2, $3)"
+	db.UseConnection(func(db *sql.DB) any {
+		_, err := db.Exec(query, itemId, timestamp, status)
+		if err != nil {
+			logger.Error("Can't save order dish item status because %v", err)
+			panic(fmt.Sprintf("Can't save order dish item status because %v", err))
+		}
+		return 1
+	})
 }
