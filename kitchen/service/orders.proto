@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package = "dmbb.com/go2/kitchen/service";
+
+package go2.kitchen.service;
+
+message OrderEvent {
+  int32 orderId = 1;
+  string type = 2;
+}
+
+message OrderEventResponse {
+  int32 orderId = 1;
+  string message = 2;
+}
+
+service KitchenService {
+  rpc NewOrderEvent(OrderEvent) returns (OrderEventResponse) {}
+}

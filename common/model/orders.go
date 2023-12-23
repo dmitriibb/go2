@@ -42,3 +42,8 @@ type OrderDishItem struct {
 	TimeCreated time.Time
 	Status      OrderDishItemStatus
 }
+
+const (
+	StartProcessingOrder string = "StartProcessing"
+	CancelOrder          string = "CancelOrder"
+)

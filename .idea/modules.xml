@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/client.iml" filepath="$PROJECT_DIR$/client.iml" />
       <module fileurl="file://$PROJECT_DIR$/common.iml" filepath="$PROJECT_DIR$/common.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/go2.iml" filepath="$PROJECT_DIR$/.idea/go2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/kitchen.iml" filepath="$PROJECT_DIR$/kitchen.iml" />
       <module fileurl="file://$PROJECT_DIR$/manager/manager.iml" filepath="$PROJECT_DIR$/manager/manager.iml" />
     </modules>
   </component>

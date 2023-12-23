@@ -26,7 +26,7 @@ func LogInfo(message string) {
 func logMessage(loggerName string, prefix logLevel, messageArgs ...any) {
 	var message string
 	if len(messageArgs) > 1 {
-		message = fmt.Sprintf(messageArgs[0].(string), messageArgs[1:])
+		message = fmt.Sprintf(messageArgs[0].(string), messageArgs[1:]...)
 	} else {
 		message = messageArgs[0].(string)
 	}
