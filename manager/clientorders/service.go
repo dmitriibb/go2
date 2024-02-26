@@ -20,7 +20,11 @@ var loggerService = logging.NewLogger("ManagerService")
 func NewOrder(orderApi *model.ClientOrderDTO) {
 	// TODO start transaction
 	order := &ClientOrder{ClientId: orderApi.ClientId}
-	order = SaveOrderInDb(order)
+	order, err := SaveOrderInDb(order)
+	if err != nil {
+		loggerService.Error("Can't save order in DB because %v", err)
+		panic(fmt.Sprintf("Can't save order in DB because %v", err))
+	}
 	items := make([]ClientOrderItem, 0)
 	// Items with prices
 	for _, itemApi := range orderApi.Items {
