@@ -1,14 +1,16 @@
-package api
+package clientorders
 
 import (
+	"dmbb.com/go2/common/logging"
 	"dmbb.com/go2/common/model"
-	"dmbb.com/go2/manager/orders/service"
 	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
-func ClientOrder(w http.ResponseWriter, r *http.Request) {
+var loggerApiHttp = logging.NewLogger("api.http.client.orders")
+
+func HttpHandleClientOrder(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "PUT":
 		newOrder(w, r)
@@ -18,18 +20,17 @@ func ClientOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func newOrder(w http.ResponseWriter, r *http.Request) {
-	order := new(model.ClientOrderApi)
+	order := new(model.ClientOrderDTO)
 	if err := json.NewDecoder(r.Body).Decode(order); err != nil {
-		logger.Error(err.Error())
-		fmt.Fprintf(w, "Can't create a new order because '%v'", err.Error())
+		loggerApiHttp.Error("Can't create a new order because '%v'", err.Error())
 		return
 	}
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Error("Can't process new order because '%v'", r)
-			fmt.Fprintf(w, "Can't process new order because '%v'", r)
+			loggerApiHttp.Error("Can't process new order because '%v'", r)
 		}
 	}()
-	service.NewOrder(order)
+	NewOrder(order)
+	loggerApiHttp.Debug("Created new order %v", order)
 	fmt.Fprintf(w, "Created new order %v", order)
 }

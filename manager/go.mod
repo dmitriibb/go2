@@ -8,7 +8,7 @@ replace dmbb.com/go2/kitchen => ../kitchen
 
 require (
 	dmbb.com/go2/common v0.0.0-00010101000000-000000000000
-	dmbb.com/go2/kitchen v0.0.0-00010101000000-000000000000
+	dmbb.com/go2/kitchen v0.0.0
 	google.golang.org/grpc v1.60.1
 )
 

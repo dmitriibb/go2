@@ -4,7 +4,7 @@ import (
 	"dmbb.com/go2/common/logging"
 	"fmt"
 	"google.golang.org/grpc"
-	"kitchen/service"
+	"kitchen/kitchenorders"
 	"net"
 	"net/http"
 )
@@ -28,7 +28,7 @@ func main() {
 	}
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	service.RegisterKitchenServiceServer(grpcServer, &service.KitchenService{})
+	kitchenorders.RegisterKitchenOrdersServiceServer(grpcServer, kitchenorders.KitchenOrdersService)
 	logger.Info("Kitchen service registered...")
 	grpcServer.Serve(lis)
 }
