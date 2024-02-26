@@ -46,7 +46,14 @@ type customLogger struct {
 	loggerName string
 }
 
-func NewLogger(loggerName string) *customLogger {
+type Logger interface {
+	Debug(messageArgs ...any)
+	Info(messageArgs ...any)
+	Warn(messageArgs ...any)
+	Error(messageArgs ...any)
+}
+
+func NewLogger(loggerName string) Logger {
 	return &customLogger{loggerName}
 }
 

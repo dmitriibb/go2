@@ -4,11 +4,10 @@ import (
 	"context"
 	"dmbb.com/go2/common/logging"
 	"dmbb.com/go2/common/model"
-	"dmbb.com/go2/kitchen/kitchenorders"
+	"dmbb.com/go2/kitchen/orders/handler"
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"time"
 )
 
 const price = 10.0
@@ -38,22 +37,22 @@ func NewOrder(orderApi *model.ClientOrderDTO) {
 		SaveOrderItemInDb(&item)
 		items = append(items, item)
 	}
+	order.Items = items
 
 	// Items for kitchen
-	for _, itemApi := range orderApi.Items {
-		for i := 0; i < itemApi.Quantity; i++ {
-			dishItem := ClientOrderDishItem{
-				ClientId:    order.ClientId,
-				OrderId:     order.Id,
-				DishName:    itemApi.DishName,
-				TimeCreated: time.Now(),
-				Status:      Created,
-			}
-			id := SaveOrderDishItemInDb(&dishItem)
-			SaveOrderDishItemStatus(id, dishItem.TimeCreated, Created)
-		}
-	}
-	// TODO fix grpc
+	//for _, itemApi := range orderApi.Items {
+	//	for i := 0; i < itemApi.Quantity; i++ {
+	//		dishItem := ClientOrderDishItem{
+	//			ClientId:    order.ClientId,
+	//			OrderId:     order.Id,
+	//			DishName:    itemApi.DishName,
+	//			TimeCreated: time.Now(),
+	//			Status:      Created,
+	//		}
+	//		id := SaveOrderDishItemInDb(&dishItem)
+	//		SaveOrderDishItemStatus(id, dishItem.TimeCreated, Created)
+	//	}
+	//}
 	sendNewOrderEvent(order)
 }
 
@@ -65,18 +64,18 @@ func sendNewOrderEvent(order *ClientOrder) {
 	}
 	defer conn.Close()
 
-	client := kitchenorders.NewKitchenOrdersServiceClient(conn)
-	items := make([]*kitchenorders.NewOrderItem, len(order.Items))
+	client := handler.NewKitchenOrdersHandlerClient(conn)
+	items := make([]*handler.NewOrderItem, len(order.Items))
 	for i, item := range order.Items {
-		newItem := &kitchenorders.NewOrderItem{
+		newItem := &handler.NewOrderItem{
 			DishName: item.DishName,
 			Quantity: int32(item.Quantity),
 		}
 		items[i] = newItem
 	}
-	response, err := client.PutNewOrder(context.Background(), &kitchenorders.PutNewOrderRequest{OrderId: int32(order.Id), Items: items})
+	response, err := client.PutNewOrder(context.Background(), &handler.PutNewOrderRequest{OrderId: int32(order.Id), Items: items})
 	if err != nil {
 		panic(fmt.Sprintf("Can't call kitchen grpc because %v", err))
 	}
-	loggerService.Debug("Sent order %v event to Kitchen. Response = %v", order.Id, response)
+	loggerService.Debug("Sent order %v PutNewOrderRequest to Kitchen. Response = %v", order.Id, response)
 }

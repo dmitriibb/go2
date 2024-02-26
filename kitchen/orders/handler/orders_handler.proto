@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option go_package = "dmbb.com/go2/kitchen/kitchenorders";
+option go_package = "dmbb.com/go2/kitchen/orders/handler";
 
-package kitchenorders;
+package handler;
 
 message NewOrderItem {
   string dishName = 1;
@@ -18,6 +18,6 @@ message PutNewOrderResponse {
   string status = 1;
 }
 
-service KitchenOrdersService {
+service KitchenOrdersHandler {
   rpc PutNewOrder(PutNewOrderRequest) returns (PutNewOrderResponse) {}
 }
