@@ -14,4 +14,5 @@ const (
 	OrderItemNew        OrderItemStatus = "New"
 	OrderItemInProgress OrderItemStatus = "InProgress"
 	OrderItemReady      OrderItemStatus = "Ready"
+	OrderItemError      OrderItemStatus = "Error"
 )

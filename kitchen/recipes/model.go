@@ -9,7 +9,7 @@ type RecipeStage struct {
 	TimeStarted   int64             `json:"timeStarted"`
 	Status        RecipeStageStatus `json:"status"`
 	Comment       string            `json:"comment"`
-	SubStages     []RecipeStage     `json:"subStages"`
+	SubStages     []*RecipeStage    `json:"subStages"`
 }
 
 type RecipeStageStatus string

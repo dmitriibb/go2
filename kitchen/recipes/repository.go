@@ -14,7 +14,7 @@ var inMemoryData = make(map[string]string)
 func GetRecipe(name string) (RecipeStage, error) {
 	data, ok := inMemoryData[name]
 	if !ok {
-		return RecipeStage{}, fmt.Errorf("Recipe not found")
+		return RecipeStage{}, fmt.Errorf("recipe for '%v' not found", name)
 	}
 	var recipe RecipeStage
 	err := json.Unmarshal([]byte(data), &recipe)
@@ -34,8 +34,8 @@ func InitData() {
 func addBurger() {
 	burger := RecipeStage{}
 	burger.Name = "burger"
-	burger.Ingredients = []string{"burger bun", "tomato", "lettuce", "onion", "mayo", "beef", "cheese"}
-	burger.SubStages = []RecipeStage{
+	burger.Ingredients = []string{}
+	burger.SubStages = []*RecipeStage{
 		{
 			Name:        "cut vegetables",
 			Ingredients: []string{"tomato", "lettuce", "onion"},
@@ -47,7 +47,7 @@ func addBurger() {
 		},
 		{
 			Name:        "assemble burger",
-			Ingredients: []string{"burger bun", "tomato", "lettuce", "onion", "mayo", "beef", "cheese"},
+			Ingredients: []string{"burger bun", "mayo", "cheese"},
 		},
 	}
 
@@ -58,7 +58,7 @@ func addCola() {
 	cola := RecipeStage{}
 	cola.Name = "cola"
 	cola.Ingredients = []string{"cola", "ice"}
-	cola.SubStages = []RecipeStage{
+	cola.SubStages = []*RecipeStage{
 		{
 			Name:        "open cola",
 			Ingredients: []string{"cola"},
@@ -75,7 +75,7 @@ func addCoffee() {
 	coffee := RecipeStage{}
 	coffee.Name = "coffee"
 	coffee.Ingredients = []string{"coffee", "milk"}
-	coffee.SubStages = []RecipeStage{
+	coffee.SubStages = []*RecipeStage{
 		{
 			Name:        "brew coffee",
 			Ingredients: []string{"coffee"},
@@ -99,11 +99,11 @@ func addPasta() {
 	pasta := RecipeStage{}
 	pasta.Name = "pasta"
 	pasta.Ingredients = []string{"egg", "flour", "onion", "chicken", "salt", "butter"}
-	pasta.SubStages = []RecipeStage{
+	pasta.SubStages = []*RecipeStage{
 		{
 			Name:        "make pasta",
 			Ingredients: []string{"egg", "flour"},
-			SubStages: []RecipeStage{
+			SubStages: []*RecipeStage{
 				{
 					Name:        "mix eggs and flour",
 					Ingredients: []string{"egg", "flour"},

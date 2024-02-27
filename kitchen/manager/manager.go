@@ -11,13 +11,15 @@ import (
 var logger = logging.NewLogger("Kitchen.Manager")
 var allWorkerList = []string{"dima", "john", "mark", "kate", "alex"}
 var activeWorkers = make(map[string]workers.Worker)
+var started = false
 
-type manager struct{}
-
-var Manager = &manager{}
-
-func (manager *manager) Start(newOrders chan *handler.PutNewOrderRequest, closeChan chan string) {
-	logger.Info("Start manager")
+func Start(newOrders chan *handler.PutNewOrderRequest, closeChan chan string) {
+	if started {
+		logger.Warn("Already started")
+		return
+	}
+	started = true
+	logger.Info("Start")
 	startWorkers()
 	go func() {
 		for {
@@ -58,7 +60,7 @@ func processReadyOrderItem(readyDish *model.OrderItem) {
 	}
 
 	// TODO
-	logger.Info("Dish item %v si ready. Now need to do something", readyDish)
+	logger.Info("Dish item %v is ready. Now need to do something", readyDish)
 }
 
 func startWorkers() {

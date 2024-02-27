@@ -6,6 +6,8 @@ import (
 	"google.golang.org/grpc"
 	"kitchen/manager"
 	"kitchen/orders/handler"
+	"kitchen/recipes"
+	"kitchen/storage"
 	"net"
 	"net/http"
 )
@@ -21,8 +23,11 @@ func main() {
 	logger.Info("start")
 
 	// init
+	recipes.InitData()
 	closeManagerChan := make(chan string)
-	manager.Manager.Start(handler.OrdersHandler.NewOrders, closeManagerChan)
+	manager.Start(handler.OrdersHandler.NewOrders, closeManagerChan)
+	closeStorageChan := make(chan string)
+	storage.Start(closeStorageChan)
 
 	// http handle
 	go func() {
