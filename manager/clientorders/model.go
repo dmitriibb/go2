@@ -1,37 +1,28 @@
 package clientorders
 
-import "time"
+type ClientOrderItemStatus string
 
-type ClientOrderDishItemStatus string
+const (
+	Created    ClientOrderItemStatus = "Created"
+	InProgress ClientOrderItemStatus = "InProgress"
+	Ready      ClientOrderItemStatus = "Ready"
+	Served     ClientOrderItemStatus = "Served"
+)
 
 type ClientOrderItem struct {
 	ClientId string
 	OrderId  int
+	ItemId   int
 	DishName string
-	Quantity int
+	Comment  string
 	Price    float32
 }
 
 type ClientOrder struct {
 	Id       int
 	ClientId string
-	Items    []ClientOrderItem
+	Items    []*ClientOrderItem
 }
-
-type ClientOrderDishItem struct {
-	ClientId    string
-	OrderId     int
-	DishName    string
-	TimeCreated time.Time
-	Status      ClientOrderDishItemStatus
-}
-
-const (
-	Created    ClientOrderDishItemStatus = "Created"
-	InProgress ClientOrderDishItemStatus = "InProgress"
-	Ready      ClientOrderDishItemStatus = "Ready"
-	Served     ClientOrderDishItemStatus = "Served"
-)
 
 const (
 	StartProcessingOrder string = "StartProcessing"

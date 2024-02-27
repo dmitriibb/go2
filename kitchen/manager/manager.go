@@ -2,14 +2,13 @@ package manager
 
 import (
 	"dmbb.com/go2/common/logging"
+	"kitchen/buffers"
 	"kitchen/model"
 	"kitchen/orders/handler"
 	"kitchen/workers"
 )
 
 var logger = logging.NewLogger("Kitchen.Manager")
-var DishQueue = make(chan *model.DishItem, 100)
-var ReadyDishQueue = make(chan *model.DishItem, 100)
 var allWorkerList = []string{"dima", "john", "mark", "kate", "alex"}
 var activeWorkers = make(map[string]workers.Worker)
 
@@ -25,8 +24,8 @@ func (manager *manager) Start(newOrders chan *handler.PutNewOrderRequest, closeC
 			select {
 			case newOrder := <-newOrders:
 				processNewOrders(newOrder)
-			case readyDish := <-ReadyDishQueue:
-				processReadyDish(readyDish)
+			case readyItem := <-buffers.ReadyOrderItems:
+				processReadyOrderItem(readyItem)
 			case closeMessage := <-closeChan:
 				logger.Info("Stop manager because %v", closeMessage)
 				return
@@ -37,23 +36,24 @@ func (manager *manager) Start(newOrders chan *handler.PutNewOrderRequest, closeC
 
 func processNewOrders(newOrder *handler.PutNewOrderRequest) {
 	logger.Info("Received new order %v", newOrder)
-	for _, orderDishItem := range newOrder.Items {
-		logger.Info("Received new dish %v : %v", orderDishItem.DishName, orderDishItem.Quantity)
-		for i := 0; i < int(orderDishItem.Quantity); i++ {
-			dishItem := &model.DishItem{
-				OrderId: int(newOrder.OrderId),
-				Name:    orderDishItem.DishName,
-				Status:  model.DishItemNew,
-			}
-			DishQueue <- dishItem
+	for _, orderItem := range newOrder.Items {
+		logger.Info("Received new dish order: %v, item: %v, name: %v", newOrder.OrderId, orderItem.ItemId, orderItem.DishName)
+		dishItem := &model.OrderItem{
+			OrderId: int(newOrder.OrderId),
+			ItemId:  int(orderItem.ItemId),
+			Name:    orderItem.DishName,
+			Comment: orderItem.Comment,
+			Status:  model.OrderItemNew,
 		}
+		buffers.NewOrderItems <- dishItem
+
 	}
 }
 
-func processReadyDish(readyDish *model.DishItem) {
-	if readyDish.Status != model.DishItemReady {
-		logger.Warn("Received dish item '%v' is not ready. Return it to workers")
-		DishQueue <- readyDish
+func processReadyOrderItem(readyDish *model.OrderItem) {
+	if readyDish.Status != model.OrderItemReady {
+		logger.Warn("Received order item '%v' is not ready. Return it to workers")
+		buffers.NewOrderItems <- readyDish
 		return
 	}
 
@@ -63,7 +63,7 @@ func processReadyDish(readyDish *model.DishItem) {
 
 func startWorkers() {
 	for _, workerName := range allWorkerList {
-		worker := workers.New(workerName, DishQueue, ReadyDishQueue)
+		worker := workers.New(workerName)
 		activeWorkers[workerName] = worker
 		worker.Start()
 	}

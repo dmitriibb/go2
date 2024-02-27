@@ -1,15 +1,17 @@
 package model
 
-type DishItem struct {
+type OrderItem struct {
 	OrderId int
+	ItemId  int
 	Name    string
-	Status  DishItemStatus
+	Comment string
+	Status  OrderItemStatus
 }
 
-type DishItemStatus string
+type OrderItemStatus string
 
 const (
-	DishItemNew        DishItemStatus = "DishItemNew"
-	DishItemInProgress DishItemStatus = "DishItemInProgress"
-	DishItemReady      DishItemStatus = "DishItemReady"
+	OrderItemNew        OrderItemStatus = "New"
+	OrderItemInProgress OrderItemStatus = "InProgress"
+	OrderItemReady      OrderItemStatus = "Ready"
 )

@@ -24,35 +24,26 @@ func NewOrder(orderApi *model.ClientOrderDTO) {
 		loggerService.Error("Can't save order in DB because %v", err)
 		panic(fmt.Sprintf("Can't save order in DB because %v", err))
 	}
-	items := make([]ClientOrderItem, 0)
+	items := make([]*ClientOrderItem, 0)
 	// Items with prices
 	for _, itemApi := range orderApi.Items {
-		item := ClientOrderItem{
-			OrderId:  order.Id,
-			ClientId: order.ClientId,
-			DishName: itemApi.DishName,
-			Quantity: itemApi.Quantity,
-			Price:    float32(itemApi.Quantity) * price,
+		for i := 0; i < itemApi.Quantity; i++ {
+			item := &ClientOrderItem{
+				OrderId:  order.Id,
+				ClientId: order.ClientId,
+				DishName: itemApi.DishName,
+				// TODO add prices
+				Price: price,
+			}
+			item, err := SaveOrderItemInDb(item)
+			if err != nil {
+				loggerService.Error("Can't save order item in DB because %v", err)
+				panic(fmt.Sprintf("Can't save order item in DB because %v", err))
+			}
+			items = append(items, item)
 		}
-		SaveOrderItemInDb(&item)
-		items = append(items, item)
 	}
 	order.Items = items
-
-	// Items for kitchen
-	//for _, itemApi := range orderApi.Items {
-	//	for i := 0; i < itemApi.Quantity; i++ {
-	//		dishItem := ClientOrderDishItem{
-	//			ClientId:    order.ClientId,
-	//			OrderId:     order.Id,
-	//			DishName:    itemApi.DishName,
-	//			TimeCreated: time.Now(),
-	//			Status:      Created,
-	//		}
-	//		id := SaveOrderDishItemInDb(&dishItem)
-	//		SaveOrderDishItemStatus(id, dishItem.TimeCreated, Created)
-	//	}
-	//}
 	sendNewOrderEvent(order)
 }
 
@@ -69,7 +60,8 @@ func sendNewOrderEvent(order *ClientOrder) {
 	for i, item := range order.Items {
 		newItem := &handler.NewOrderItem{
 			DishName: item.DishName,
-			Quantity: int32(item.Quantity),
+			ItemId:   int32(item.ItemId),
+			Comment:  item.Comment,
 		}
 		items[i] = newItem
 	}

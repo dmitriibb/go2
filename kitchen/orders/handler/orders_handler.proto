@@ -6,7 +6,8 @@ package handler;
 
 message NewOrderItem {
   string dishName = 1;
-  int32 quantity = 2;
+  int32 itemId = 2;
+  string comment = 3;
 }
 
 message PutNewOrderRequest {

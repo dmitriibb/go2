@@ -3,6 +3,7 @@ package model
 type OrderItemDTO struct {
 	DishName string `json:"dishName"`
 	Quantity int    `json:"quantity"`
+	Comment  string `json:"comment"`
 }
 
 type ClientOrderDTO struct {
