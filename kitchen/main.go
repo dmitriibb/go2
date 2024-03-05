@@ -1,6 +1,7 @@
 package main
 
 import (
+	"dmbb.com/go2/common/db/mongo"
 	"dmbb.com/go2/common/logging"
 	"fmt"
 	"google.golang.org/grpc"
@@ -23,11 +24,12 @@ func main() {
 	logger.Info("start")
 
 	// init
-	recipes.InitData()
+	mongo.Init()
+	recipes.Init()
 	closeManagerChan := make(chan string)
-	manager.Start(handler.OrdersHandler.NewOrders, closeManagerChan)
+	manager.Init(handler.OrdersHandler.NewOrders, closeManagerChan)
 	closeStorageChan := make(chan string)
-	storage.Start(closeStorageChan)
+	storage.Init(closeStorageChan)
 
 	// http handle
 	go func() {

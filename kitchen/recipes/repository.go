@@ -1,15 +1,38 @@
 package recipes
 
 import (
+	"context"
+	"dmbb.com/go2/common/db/mongo"
 	"dmbb.com/go2/common/logging"
+	"dmbb.com/go2/common/utils"
 	"encoding/json"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"kitchen/constants"
+)
+
+const (
+	recipes_collection = "recipes"
 )
 
 var logger = logging.NewLogger("RecipesRepository")
 
 // store in json
 var inMemoryData = make(map[string]string)
+var dbName = ""
+
+var initialized = false
+
+func Init() {
+	if initialized {
+		return
+	}
+	dbName = utils.GetEnvProperty(constants.MongoDbNameEnv)
+	initData()
+	initialized = true
+	logger.Debug("initialized")
+}
 
 func GetRecipe(name string) (RecipeStage, error) {
 	data, ok := inMemoryData[name]
@@ -24,14 +47,39 @@ func GetRecipe(name string) (RecipeStage, error) {
 	return recipe, nil
 }
 
-func InitData() {
-	addBurger()
-	addCola()
-	addCoffee()
-	addWater()
-	addPasta()
+func initData() {
+	mongo.TestConnection()
+	saveInMongo(recipeBurger())
+	saveInMongo(recipeCola())
+	saveInMongo(recipeCoffee())
+	saveInMongo(recipeWater())
+	saveInMongo(recipeBread())
+	saveInMongo(recipePasta())
 }
-func addBurger() {
+
+func saveInMemory(recipe RecipeStage) {
+	v, _ := json.Marshal(recipe)
+	inMemoryData[recipe.Name] = string(v)
+}
+
+func saveInMongo(recipe RecipeStage) {
+	client := mongo.GetClient()
+	defer client.Disconnect(context.TODO())
+	collection := client.Database(dbName).Collection(recipes_collection)
+
+	filter := bson.D{{"name", recipe.Name}}
+	update := bson.D{{"$set", recipe}}
+	result, err := collection.UpdateOne(context.TODO(), filter, update, options.Update().SetUpsert(true))
+	//result, err := collection.InsertOne(context.TODO(), recipe)
+	if err != nil {
+		logger.Error("can't save recipe in DB because %v", err.Error())
+		return
+	}
+	logger.Info("saved recipe '%v' in DB. Result: %v", recipe.Name, result)
+
+}
+
+func recipeBurger() RecipeStage {
 	burger := RecipeStage{}
 	burger.Name = "burger"
 	burger.Ingredients = []string{}
@@ -50,11 +98,9 @@ func addBurger() {
 			Ingredients: []string{"burger bun", "mayo", "cheese"},
 		},
 	}
-
-	v, _ := json.Marshal(burger)
-	inMemoryData[burger.Name] = string(v)
+	return burger
 }
-func addCola() {
+func recipeCola() RecipeStage {
 	cola := RecipeStage{}
 	cola.Name = "cola"
 	cola.Ingredients = []string{"cola", "ice"}
@@ -68,10 +114,9 @@ func addCola() {
 			Ingredients: []string{"ice"},
 		},
 	}
-	v, _ := json.Marshal(cola)
-	inMemoryData[cola.Name] = string(v)
+	return cola
 }
-func addCoffee() {
+func recipeCoffee() RecipeStage {
 	coffee := RecipeStage{}
 	coffee.Name = "coffee"
 	coffee.Ingredients = []string{"coffee", "milk"}
@@ -85,17 +130,21 @@ func addCoffee() {
 			Ingredients: []string{"milk"},
 		},
 	}
-	v, _ := json.Marshal(coffee)
-	inMemoryData[coffee.Name] = string(v)
+	return coffee
 }
-func addWater() {
+func recipeWater() RecipeStage {
 	water := RecipeStage{}
 	water.Name = "water"
 	water.Ingredients = []string{"water"}
-	v, _ := json.Marshal(water)
-	inMemoryData[water.Name] = string(v)
+	return water
 }
-func addPasta() {
+func recipeBread() RecipeStage {
+	water := RecipeStage{}
+	water.Name = "bread"
+	water.Ingredients = []string{"bread"}
+	return water
+}
+func recipePasta() RecipeStage {
 	pasta := RecipeStage{}
 	pasta.Name = "pasta"
 	pasta.Ingredients = []string{"egg", "flour", "onion", "chicken", "salt", "butter"}
@@ -127,6 +176,5 @@ func addPasta() {
 			Ingredients: []string{"salt", "butter"},
 		},
 	}
-	v, _ := json.Marshal(pasta)
-	inMemoryData[pasta.Name] = string(v)
+	return pasta
 }

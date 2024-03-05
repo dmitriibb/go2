@@ -7,15 +7,14 @@ import (
 
 var logger = logging.NewLogger("StorageRepository")
 var ingredientsRequests = make(chan *IngredientRequest, 100)
-var started = false
+var initialized = false
 
-func Start(closeChan chan string) {
-	if started {
-		logger.Warn("Already started")
+func Init(closeChan chan string) {
+	if initialized {
+		logger.Warn("Already initialized")
 		return
 	}
-	started = true
-	logger.Debug("Start")
+
 	go func() {
 		for {
 			select {
@@ -27,6 +26,8 @@ func Start(closeChan chan string) {
 			}
 		}
 	}()
+	initialized = true
+	logger.Debug("initialized")
 }
 
 func RequireIngredients(ingredients []string, responseChan chan *IngredientsResponse) {

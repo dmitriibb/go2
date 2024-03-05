@@ -20,7 +20,7 @@ func New(name string) Worker {
 	return &simpleWorker{
 		id:       name,
 		stopChan: make(chan string),
-		logger:   logging.NewLogger(fmt.Sprintf("kitchen.worker-%v", name)),
+		logger:   logging.NewLogger(fmt.Sprintf("worker-%v", name)),
 	}
 }
 
@@ -30,7 +30,7 @@ type Worker interface {
 }
 
 func (worker *simpleWorker) Start() {
-	worker.logger.Debug("Start working")
+	worker.logger.Debug("Init working")
 	go func() {
 		for {
 			select {

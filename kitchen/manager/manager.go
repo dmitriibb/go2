@@ -8,18 +8,17 @@ import (
 	"kitchen/workers"
 )
 
-var logger = logging.NewLogger("Kitchen.Manager")
+var logger = logging.NewLogger("Manager")
 var allWorkerList = []string{"dima", "john", "mark", "kate", "alex"}
 var activeWorkers = make(map[string]workers.Worker)
-var started = false
+var initialized = false
 
-func Start(newOrders chan *handler.PutNewOrderRequest, closeChan chan string) {
-	if started {
-		logger.Warn("Already started")
+func Init(newOrders chan *handler.PutNewOrderRequest, closeChan chan string) {
+	if initialized {
+		logger.Warn("Already initialized")
 		return
 	}
-	started = true
-	logger.Info("Start")
+
 	startWorkers()
 	go func() {
 		for {
@@ -34,6 +33,8 @@ func Start(newOrders chan *handler.PutNewOrderRequest, closeChan chan string) {
 			}
 		}
 	}()
+	initialized = true
+	logger.Debug("initialized")
 }
 
 func processNewOrders(newOrder *handler.PutNewOrderRequest) {

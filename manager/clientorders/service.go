@@ -17,7 +17,7 @@ var loggerService = logging.NewLogger("ManagerService")
 
 // NewOrder TODO add informative response
 func NewOrder(orderApi *model.ClientOrderDTO) {
-	// TODO start transaction
+	// TODO start transaction use Context
 	order := &ClientOrder{ClientId: orderApi.ClientId}
 	order, err := SaveOrderInDb(order)
 	if err != nil {

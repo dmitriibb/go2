@@ -2,7 +2,7 @@ package clientorders
 
 import (
 	"database/sql"
-	"dmbb.com/go2/common/db"
+	"dmbb.com/go2/common/db/pg"
 	"dmbb.com/go2/common/logging"
 	"fmt"
 	"strings"
@@ -29,7 +29,7 @@ func SaveOrderInDb(order *ClientOrder) (*ClientOrder, error) {
 		order.Id = id
 		return id
 	}
-	db.UseConnection(f)
+	pg.UseConnection(f)
 	return order, err
 }
 
@@ -51,6 +51,6 @@ func SaveOrderItemInDb(orderItem *ClientOrderItem) (*ClientOrderItem, error) {
 		orderItem.ItemId = id
 		return id
 	}
-	db.UseConnection(f)
+	pg.UseConnection(f)
 	return orderItem, err
 }
