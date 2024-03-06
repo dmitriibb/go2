@@ -9,9 +9,9 @@ import (
 var conveyorItems = make(chan *OrderItemWrapper, 100)
 
 type OrderItemWrapper struct {
-	OrderItem   *model.OrderItem
-	RecipeStage *recipes.RecipeStage
-	Comment     string
+	OrderItem   *model.OrderItem     `bson:"orderItem"`
+	RecipeStage *recipes.RecipeStage `bson:"recipeStage"`
+	Comment     string               `bson:"comment"`
 }
 
 // TODO create a list or db with timers and shut them down properly when application stops

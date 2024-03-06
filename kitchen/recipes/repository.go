@@ -2,59 +2,55 @@ package recipes
 
 import (
 	"context"
-	"dmbb.com/go2/common/db/mongo"
+	commonMongo "dmbb.com/go2/common/db/mongo"
 	"dmbb.com/go2/common/logging"
-	"dmbb.com/go2/common/utils"
 	"encoding/json"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"kitchen/constants"
 )
 
 const (
-	recipes_collection = "recipes"
+	recipesCollection = "recipes"
+	saveModeInMemory  = "inMemory"
+	saveModeMongo     = "mongo"
 )
 
 var logger = logging.NewLogger("RecipesRepository")
 
+var saveMode = saveModeMongo
+
 // store in json
 var inMemoryData = make(map[string]string)
 var dbName = ""
-
 var initialized = false
 
 func Init() {
 	if initialized {
 		return
 	}
-	dbName = utils.GetEnvProperty(constants.MongoDbNameEnv)
+	dbName = commonMongo.GetDbName()
 	initData()
 	initialized = true
 	logger.Debug("initialized")
 }
 
-func GetRecipe(name string) (RecipeStage, error) {
-	data, ok := inMemoryData[name]
-	if !ok {
-		return RecipeStage{}, fmt.Errorf("recipe for '%v' not found", name)
-	}
-	var recipe RecipeStage
-	err := json.Unmarshal([]byte(data), &recipe)
-	if err != nil {
-		return RecipeStage{}, err
-	}
-	return recipe, nil
+func initData() {
+	save(recipeBurger())
+	save(recipeCola())
+	save(recipeCoffee())
+	save(recipeWater())
+	save(recipeBread())
+	save(recipePasta())
 }
 
-func initData() {
-	mongo.TestConnection()
-	saveInMongo(recipeBurger())
-	saveInMongo(recipeCola())
-	saveInMongo(recipeCoffee())
-	saveInMongo(recipeWater())
-	saveInMongo(recipeBread())
-	saveInMongo(recipePasta())
+func save(recipe RecipeStage) {
+	if saveMode == saveModeInMemory {
+		saveInMemory(recipe)
+	} else {
+		saveInMongo(recipe)
+	}
 }
 
 func saveInMemory(recipe RecipeStage) {
@@ -63,9 +59,9 @@ func saveInMemory(recipe RecipeStage) {
 }
 
 func saveInMongo(recipe RecipeStage) {
-	client := mongo.GetClient()
+	client := commonMongo.GetClient()
 	defer client.Disconnect(context.TODO())
-	collection := client.Database(dbName).Collection(recipes_collection)
+	collection := client.Database(dbName).Collection(recipesCollection)
 
 	filter := bson.D{{"name", recipe.Name}}
 	update := bson.D{{"$set", recipe}}
@@ -75,8 +71,60 @@ func saveInMongo(recipe RecipeStage) {
 		logger.Error("can't save recipe in DB because %v", err.Error())
 		return
 	}
-	logger.Info("saved recipe '%v' in DB. Result: %v", recipe.Name, result)
+	logger.Info("saved recipe '%v' in DB. Result: %v", recipe.Name, result.UpsertedID)
+}
 
+func GetRecipe(name string) (RecipeStage, error) {
+	if saveMode == saveModeInMemory {
+		res, err := getRecipeFromMemory(name)
+		return *res, err
+	} else {
+		res, err := getRecipeFromMongo(name)
+		return *res, err
+	}
+}
+
+func getRecipeFromMemory(name string) (*RecipeStage, error) {
+	data, ok := inMemoryData[name]
+	if !ok {
+		return &RecipeStage{}, fmt.Errorf("recipe for '%v' not found", name)
+	}
+	var recipe RecipeStage
+	err := json.Unmarshal([]byte(data), &recipe)
+	if err != nil {
+		return &RecipeStage{}, err
+	}
+	return &recipe, nil
+}
+
+func getRecipeFromMongo(name string) (*RecipeStage, error) {
+	ctx := context.TODO()
+	filter := bson.D{{"name", name}}
+	var err error
+	var cur *mongo.Cursor
+	var res *RecipeStage
+	f := func(client *mongo.Client) any {
+		collection := client.Database(commonMongo.GetDbName()).Collection(recipesCollection)
+		cur, err = collection.Find(ctx, filter)
+		if err != nil {
+			logger.Error("can't find '%v' in the %v", name, recipesCollection)
+			return nil
+		}
+		var results []RecipeStage
+		if err = cur.All(ctx, &results); err != nil {
+			logger.Error("can't parse cursor into []RecipeStage")
+			return nil
+		}
+		if len(results) > 1 {
+			logger.Warn("found %v recipes for '%v'", len(results), name)
+			res = &results[0]
+		} else if len(results) == 1 {
+			res = &results[0]
+		}
+		return nil
+	}
+	commonMongo.UseClient(ctx, f)
+	return res, err
 }
 
 func recipeBurger() RecipeStage {

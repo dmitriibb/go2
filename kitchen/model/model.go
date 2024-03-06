@@ -1,11 +1,11 @@
 package model
 
 type OrderItem struct {
-	OrderId int
-	ItemId  int
-	Name    string
-	Comment string
-	Status  OrderItemStatus
+	OrderId int             `bson:"orderId"`
+	ItemId  int             `bson:"itemId"`
+	Name    string          `bson:"name"`
+	Comment string          `bson:"comment"`
+	Status  OrderItemStatus `bson:"status"`
 }
 
 type OrderItemStatus string

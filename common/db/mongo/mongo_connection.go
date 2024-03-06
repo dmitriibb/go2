@@ -11,6 +11,7 @@ import (
 var logger = logging.NewLogger("MongoConnection")
 var initialized = false
 var mongoUri = ""
+var dbName = ""
 
 func Init() {
 	if initialized {
@@ -18,9 +19,17 @@ func Init() {
 		return
 	}
 	mongoUri = utils.GetEnvProperty(MongoUriEnv)
+	dbName = utils.GetEnvProperty(MongoDbNameEnv)
 
 	initialized = true
 	logger.Debug("initialized")
+}
+
+func GetDbName() string {
+	if len(dbName) == 0 {
+		panic("DB name is empty")
+	}
+	return dbName
 }
 
 func TestConnection() {
@@ -45,4 +54,17 @@ func GetClient() *mongo.Client {
 		panic(err)
 	}
 	return client
+}
+
+func UseClient(ctx context.Context, f func(client *mongo.Client) any) any {
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoUri))
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		if err := client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+	return f(client)
 }
