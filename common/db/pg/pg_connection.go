@@ -3,17 +3,16 @@ package pg
 import (
 	"database/sql"
 	"dmbb.com/go2/common/logging"
+	"dmbb.com/go2/common/utils"
 	"fmt"
 	_ "github.com/lib/pq"
 )
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "user"
-	password = "qwerty1"
-	dbname   = "go2"
-)
+var host = utils.GetEnvProperty(DbHostEnv)
+var port = utils.GetEnvProperty(DbPortEnv)
+var user = utils.GetEnvProperty(DbUserEnv)
+var password = utils.GetEnvProperty(DbPasswordEnv)
+var dbname = utils.GetEnvProperty(DbNameEnv)
 
 var logger = logging.NewLogger("dbConnections")
 

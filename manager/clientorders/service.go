@@ -4,14 +4,17 @@ import (
 	"context"
 	"dmbb.com/go2/common/logging"
 	"dmbb.com/go2/common/model"
+	"dmbb.com/go2/common/utils"
 	"dmbb.com/go2/kitchen/orders/handler"
+	"dmbb.com/go2/manager/constants"
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 const price = 10.0
-const kitchenServiceGrpcUrl = ":8091"
+
+var kitchenServiceGrpcUrl = utils.GetEnvProperty(constants.KitchenGrpcPortEnv)
 
 var loggerService = logging.NewLogger("ManagerService")
 

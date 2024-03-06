@@ -1,8 +1,10 @@
 package main
 
 import (
+	"dmbb.com/go2/common/constants"
 	"dmbb.com/go2/common/db/mongo"
 	"dmbb.com/go2/common/logging"
+	"dmbb.com/go2/common/utils"
 	"fmt"
 	"google.golang.org/grpc"
 	"kitchen/manager"
@@ -13,15 +15,12 @@ import (
 	"net/http"
 )
 
-const (
-	httpPort = 8090
-	grpcPort = 8091
-)
-
 var logger = logging.NewLogger("KitchenMain")
 
 func main() {
 	logger.Info("start")
+	httpPort := utils.GetEnvProperty(constants.HttpPortEnv)
+	grpcPort := utils.GetEnvProperty(constants.GrpcPortEnv)
 
 	// init
 	mongo.Init()
