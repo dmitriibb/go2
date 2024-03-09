@@ -39,7 +39,7 @@ func (worker *simpleWorker) Start() {
 				worker.processOrderItem(newOrderItem)
 			case orderItemWrapper := <-conveyorItems:
 				if orderItemWrapper.RecipeStage != nil {
-					worker.logger.Info("take not item from conveyor %v", orderItemWrapper)
+					worker.logger.Info("take item from conveyor %v", orderItemWrapper)
 					worker.cook(orderItemWrapper)
 				} else {
 					worker.logger.Info("take item without recipe from conveyor %v", orderItemWrapper)
@@ -91,34 +91,64 @@ func (worker *simpleWorker) cook(itemWrapper *OrderItemWrapper) {
 
 // return true if can proceed to the next stage
 func (worker *simpleWorker) cookRecipeStage(itemWrapper *OrderItemWrapper, currentStage *recipes.RecipeStage) bool {
-	if currentStage.Status == recipes.RecipeStageStatusFinished {
+
+	switch currentStage.Status {
+	case recipes.RecipeStageStatusFinished:
 		return true
-	}
+	case recipes.RecipeStageStatusInProgress:
+		worker.logger.Info("received %s  stage: '%s' with status in progress. Check if it is ready", itemWrapper, currentStage.Name)
+		currentTime := time.Now().Unix()
+		timePassed := currentTime - currentStage.TimeStarted
+		if currentStage.TimeStarted > 0 && timePassed >= currentStage.TimeToWaitSec {
+			worker.logger.Info("%s stage '%s' is ready after %s sec. Continue sub stages", itemWrapper, currentStage.Name, timePassed)
+			ready := worker.cookSubStages(itemWrapper, currentStage)
+			if ready {
+				worker.logger.Info("%s stage '%s' is ready after %v sec", itemWrapper, currentStage.Name, time.Now().Unix()-currentStage.TimeStarted)
+				currentStage.Status = recipes.RecipeStageStatusFinished
+				return true
+			}
+			return ready
+		} else {
+			return worker.cookCurrentStages(itemWrapper, currentStage)
+		}
+	case recipes.RecipeStageStatusEmpty, recipes.RecipeStageStatusError:
+		// TODO maybe need to check all ingredients at the root stage
+		responseChan := make(chan *storage.IngredientsResponse)
+		storage.RequireIngredients(currentStage.Ingredients, responseChan)
 
+		response := <-responseChan
+		if !response.Success {
+			currentStage.Status = recipes.RecipeStageStatusError
+			currentStage.Comment = fmt.Sprintf("can't get ingredients because %v. Will try again after 30 sec", response.Comment)
+			saveOrderItemWrapper(itemWrapper)
+			startConveyorTimer(itemWrapper, 30)
+			return false
+		}
+		return worker.cookCurrentStages(itemWrapper, currentStage)
+	}
+	panic(fmt.Sprintf("Unexpected for %s, %v", itemWrapper, currentStage))
+}
+
+func (worker *simpleWorker) cookCurrentStages(itemWrapper *OrderItemWrapper, currentStage *recipes.RecipeStage) bool {
 	currentStage.Status = recipes.RecipeStageStatusInProgress
-
-	// TODO maybe need to check all ingredients at the root stage
-	responseChan := make(chan *storage.IngredientsResponse)
-	storage.RequireIngredients(currentStage.Ingredients, responseChan)
-
-	response := <-responseChan
-	if !response.Success {
-		currentStage.Status = recipes.RecipeStageStatusInProgress
-		currentStage.Comment = fmt.Sprintf("can't get ingredients because %v. Will try again after 30 sec", response.Comment)
-		saveOrderItemWrapper(itemWrapper)
-		startConveyorTimer(itemWrapper, 30)
-		return false
-	}
-
-	worker.logger.Info("cooking - %v", currentStage.Name)
+	currentStage.TimeStarted = time.Now().Unix()
 	if currentStage.TimeToWaitSec > 5 {
 		worker.logger.Info("keep stage '%v' cooking for %v sec and continue it later", currentStage.Name, currentStage.TimeToWaitSec)
 		saveOrderItemWrapper(itemWrapper)
 		startConveyorTimer(itemWrapper, currentStage.TimeToWaitSec)
 		return false
+	} else {
+		worker.logger.Info("cooking - %v", currentStage.Name)
+		time.Sleep(time.Duration(currentStage.TimeToWaitSec) * time.Second)
+		ready := worker.cookSubStages(itemWrapper, currentStage)
+		if ready {
+			worker.logger.Info("%s stage '%s' is ready after %v sec", itemWrapper, currentStage.Name, time.Now().Unix()-currentStage.TimeStarted)
+		}
+		return ready
 	}
+}
 
-	timeStart := time.Now().Unix()
+func (worker *simpleWorker) cookSubStages(itemWrapper *OrderItemWrapper, currentStage *recipes.RecipeStage) bool {
 	if currentStage.SubStages != nil {
 		for _, subStage := range currentStage.SubStages {
 			if !worker.cookRecipeStage(itemWrapper, subStage) {
@@ -126,9 +156,6 @@ func (worker *simpleWorker) cookRecipeStage(itemWrapper *OrderItemWrapper, curre
 			}
 		}
 	}
-
-	time.Sleep(time.Duration(currentStage.TimeToWaitSec) * time.Second)
-	worker.logger.Info("%v ready after %v seconds", currentStage.Name, time.Now().Unix()-timeStart)
 	currentStage.Status = recipes.RecipeStageStatusFinished
 	return true
 }

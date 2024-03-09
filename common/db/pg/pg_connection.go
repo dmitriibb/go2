@@ -6,10 +6,11 @@ import (
 	"dmbb.com/go2/common/utils"
 	"fmt"
 	_ "github.com/lib/pq"
+	"strconv"
 )
 
 var host = utils.GetEnvProperty(DbHostEnv)
-var port = utils.GetEnvProperty(DbPortEnv)
+var portString = utils.GetEnvProperty(DbPortEnv)
 var user = utils.GetEnvProperty(DbUserEnv)
 var password = utils.GetEnvProperty(DbPasswordEnv)
 var dbname = utils.GetEnvProperty(DbNameEnv)
@@ -17,6 +18,7 @@ var dbname = utils.GetEnvProperty(DbNameEnv)
 var logger = logging.NewLogger("dbConnections")
 
 func TestConnectPostgres() {
+	port, _ := strconv.Atoi(portString)
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -32,6 +34,7 @@ func TestConnectPostgres() {
 	logger.Info(fmt.Sprintf("Successfully connected to '%v'!", dbname))
 }
 func UseConnection(f func(db *sql.DB) any) any {
+	port, _ := strconv.Atoi(portString)
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -52,6 +55,7 @@ func UseConnection(f func(db *sql.DB) any) any {
 	return f(connection)
 }
 func GetConnection() *sql.DB {
+	port, _ := strconv.Atoi(portString)
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)

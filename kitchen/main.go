@@ -37,7 +37,7 @@ func main() {
 	}()
 
 	// grpc handle
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", grpcPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", grpcPort))
 	if err != nil {
 		panic(fmt.Sprintf("failed to listen: %v", err))
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	commonMongo "dmbb.com/go2/common/db/mongo"
 	"dmbb.com/go2/common/logging"
+	commonInitializer "dmbb.com/go2/common/utils/initializer"
 	"encoding/json"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,17 +24,15 @@ var saveMode = saveModeMongo
 
 // store in json
 var inMemoryData = make(map[string]string)
+var initializer = commonInitializer.New(logger)
 var dbName = ""
-var initialized = false
 
 func Init() {
-	if initialized {
-		return
-	}
-	dbName = commonMongo.GetDbName()
-	initData()
-	initialized = true
-	logger.Debug("initialized")
+	initializer.Init(func() error {
+		dbName = commonMongo.GetDbName()
+		initData()
+		return nil
+	})
 }
 
 func initData() {
@@ -120,6 +119,8 @@ func getRecipeFromMongo(name string) (*RecipeStage, error) {
 			res = &results[0]
 		} else if len(results) == 1 {
 			res = &results[0]
+		} else {
+			logger.Error("can't find recipe for %s", name)
 		}
 		return nil
 	}
@@ -207,11 +208,11 @@ func recipePasta() RecipeStage {
 				},
 				{
 					Name:          "boil water",
-					TimeToWaitSec: 30,
+					TimeToWaitSec: 10,
 				},
 				{
 					Name:          "cook pasta in water",
-					TimeToWaitSec: 50,
+					TimeToWaitSec: 12,
 				},
 			},
 		},

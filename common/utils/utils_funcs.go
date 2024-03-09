@@ -21,3 +21,11 @@ func GetEnvProperty(propertyName string) string {
 	}
 	return res
 }
+
+func PanicOnError(err error, message string) {
+	if err == nil {
+		return
+	}
+	logger.Error("Panic '%v' - %v", message, err.Error())
+	panic(err.Error())
+}

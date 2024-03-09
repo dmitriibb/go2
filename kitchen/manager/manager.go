@@ -2,6 +2,12 @@ package manager
 
 import (
 	"dmbb.com/go2/common/logging"
+	commonModel "dmbb.com/go2/common/model"
+	"dmbb.com/go2/common/queue/rabbit"
+	"dmbb.com/go2/common/utils"
+	commonInitializer "dmbb.com/go2/common/utils/initializer"
+	"fmt"
+	"github.com/mitchellh/hashstructure"
 	"kitchen/buffers"
 	"kitchen/model"
 	"kitchen/orders/handler"
@@ -11,30 +17,34 @@ import (
 var logger = logging.NewLogger("Manager")
 var allWorkerList = []string{"dima", "john", "mark", "kate", "alex"}
 var activeWorkers = make(map[string]workers.Worker)
-var initialized = false
+var initializer = commonInitializer.New(logger)
+var readyOrdersQueueName = utils.GetEnvProperty("READY_ORDERS_QUEUE_NAME")
+var readyOrderItemsQueueConfig rabbit.RabbitQueueConfig
 
 func Init(newOrders chan *handler.PutNewOrderRequest, closeChan chan string) {
-	if initialized {
-		logger.Warn("Already initialized")
-		return
-	}
-
-	startWorkers()
-	go func() {
-		for {
-			select {
-			case newOrder := <-newOrders:
-				processNewOrders(newOrder)
-			case readyItem := <-buffers.ReadyOrderItems:
-				processReadyOrderItem(readyItem)
-			case closeMessage := <-closeChan:
-				logger.Info("Stop manager because %v", closeMessage)
-				return
-			}
+	initializer.Init(func() error {
+		qConfig, err := rabbit.GetQueueConfig(readyOrdersQueueName)
+		if err != nil {
+			return err
 		}
-	}()
-	initialized = true
-	logger.Debug("initialized")
+		readyOrderItemsQueueConfig = qConfig
+
+		startWorkers()
+		go func() {
+			for {
+				select {
+				case newOrder := <-newOrders:
+					processNewOrders(newOrder)
+				case readyItem := <-buffers.ReadyOrderItems:
+					processReadyOrderItem(readyItem)
+				case closeMessage := <-closeChan:
+					logger.Info("Stop manager because %v", closeMessage)
+					return
+				}
+			}
+		}()
+		return nil
+	})
 }
 
 func processNewOrders(newOrder *handler.PutNewOrderRequest) {
@@ -53,15 +63,22 @@ func processNewOrders(newOrder *handler.PutNewOrderRequest) {
 	}
 }
 
-func processReadyOrderItem(readyDish *model.OrderItem) {
-	if readyDish.Status != model.OrderItemReady {
+func processReadyOrderItem(readyOrderItem *model.OrderItem) {
+	if readyOrderItem.Status != model.OrderItemReady {
 		logger.Warn("Received order item '%v' is not ready. Return it to workers")
-		buffers.NewOrderItems <- readyDish
+		buffers.NewOrderItems <- readyOrderItem
 		return
 	}
 
 	// TODO
-	logger.Info("Dish item %v is ready. Now need to do something", readyDish)
+	logger.Info("Dish item %v is ready. Send to %s queue", readyOrderItem, readyOrdersQueueName)
+	msg := commonModel.ReadyOrderItem{
+		OrderId:  readyOrderItem.OrderId,
+		ItemId:   readyOrderItem.ItemId,
+		DishName: readyOrderItem.Name,
+		Payload:  readyOrderITemToPayload(readyOrderItem),
+	}
+	rabbit.SendToQueue(readyOrderItemsQueueConfig, msg)
 }
 
 func startWorkers() {
@@ -70,4 +87,13 @@ func startWorkers() {
 		activeWorkers[workerName] = worker
 		worker.Start()
 	}
+}
+
+// hash is like an actual food
+func readyOrderITemToPayload(readyOrderItem *model.OrderItem) string {
+	hash, err := hashstructure.Hash(readyOrderItem, nil)
+	if err != nil {
+		logger.Error("Can't convert ready order item to hash. (%s)", readyOrderItem)
+	}
+	return fmt.Sprintf("%s", hash)
 }

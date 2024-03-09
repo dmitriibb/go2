@@ -1,6 +1,7 @@
 package workers
 
 import (
+	"fmt"
 	"kitchen/model"
 	"kitchen/recipes"
 	"time"
@@ -12,6 +13,10 @@ type OrderItemWrapper struct {
 	OrderItem   *model.OrderItem     `bson:"orderItem"`
 	RecipeStage *recipes.RecipeStage `bson:"recipeStage"`
 	Comment     string               `bson:"comment"`
+}
+
+func (wrapper *OrderItemWrapper) String() string {
+	return fmt.Sprintf("{order: %v, item: %v, dishName: %v}", wrapper.OrderItem.OrderId, wrapper.OrderItem.ItemId, wrapper.RecipeStage.Name)
 }
 
 // TODO create a list or db with timers and shut them down properly when application stops

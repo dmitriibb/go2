@@ -3,6 +3,7 @@ module dmbb.com/go2/manager
 go 1.21
 
 replace dmbb.com/go2/common => ../common
+
 replace dmbb.com/go2/kitchen => ../kitchen
 
 require (
@@ -13,6 +14,7 @@ require (
 
 require (
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
