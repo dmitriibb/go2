@@ -8,6 +8,7 @@ import (
 	"dmbb.com/go2/common/utils"
 	"dmbb.com/go2/kitchen/orders/handler"
 	"dmbb.com/go2/manager/constants"
+	"errors"
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -21,14 +22,16 @@ var kitchenServiceGrpcUrl = utils.GetEnvProperty(constants.KitchenGrpcPortEnv)
 var loggerService = logging.NewLogger("ManagerService")
 
 // NewOrder TODO add informative response
-func NewOrder(orderApi *model.ClientOrderDTO) {
+func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 	ctx, ctxCancel := context.WithCancel(context.Background())
+	defer ctxCancel()
 	txWrapper := pg.StartTransaction(ctx)
 	order := &ClientOrder{ClientId: orderApi.ClientId}
 	order, err := SaveOrderInDb(txWrapper, order)
 	if err != nil {
 		loggerService.Error("Can't save order in DB because %v", err)
-		panic(fmt.Sprintf("Can't save order in DB because %v", err))
+		ctxCancel()
+		return &model.ClientOrderResponseDTO{"Fail"}
 	}
 	items := make([]*ClientOrderItem, 0)
 	// Items with prices
@@ -45,14 +48,30 @@ func NewOrder(orderApi *model.ClientOrderDTO) {
 			item, err := SaveOrderItemInDb(txWrapper, item)
 			if err != nil {
 				loggerService.Error("Can't save order item in DB because %v", err)
-				panic(fmt.Sprintf("Can't save order item in DB because %v", err))
+				ctxCancel()
+				return &model.ClientOrderResponseDTO{"Fail"}
 			}
+
+			if strings.Contains(item.Comment, "error manager") {
+				loggerService.Error("error manager")
+				ctxCancel()
+				return &model.ClientOrderResponseDTO{"Fail"}
+			}
+
 			items = append(items, item)
 		}
 	}
 	order.Items = items
 	sendNewOrderEvent(ctx, ctxCancel, order)
+
+	err = ctx.Err()
+	if err != nil && errors.Is(err, context.Canceled) {
+		loggerService.Error("Failed save %s because %s", order, err.Error())
+		return &model.ClientOrderResponseDTO{"Fail"}
+	}
+
 	txWrapper.Commit()
+	return &model.ClientOrderResponseDTO{"Success"}
 }
 
 func sendNewOrderEvent(ctx context.Context, ctxCancel context.CancelFunc, order *ClientOrder) {

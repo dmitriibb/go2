@@ -10,3 +10,7 @@ type ClientOrderDTO struct {
 	ClientId string         `json:"clientId"`
 	Items    []OrderItemDTO `json:"items"`
 }
+
+type ClientOrderResponseDTO struct {
+	Comment string `json:"comment"`
+}
