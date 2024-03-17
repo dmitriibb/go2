@@ -105,7 +105,6 @@ func (worker *simpleWorker) cookRecipeStage(itemWrapper *OrderItemWrapper, curre
 			if ready {
 				worker.logger.Info("%s stage '%s' is ready after %v sec", itemWrapper, currentStage.Name, time.Now().Unix()-currentStage.TimeStarted)
 				currentStage.Status = recipes.RecipeStageStatusFinished
-				return true
 			}
 			return ready
 		} else {

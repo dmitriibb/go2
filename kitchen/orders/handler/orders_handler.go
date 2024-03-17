@@ -18,7 +18,13 @@ func (ko *ordersHandler) mustEmbedUnimplementedKitchenOrdersHandlerServer() {
 var OrdersHandler = &ordersHandler{NewOrders: make(chan *PutNewOrderRequest, 100)}
 
 func (ko *ordersHandler) PutNewOrder(ctx context.Context, in *PutNewOrderRequest) (*PutNewOrderResponse, error) {
-	loggerService.Debug("Received new order %v", in)
+	loggerService.Debug("Received new order %s", in)
+
+	if in.Items[0].Comment == "kitchen error" {
+		loggerService.Warn("Fake error on receiving new order. Cancel ctx")
+		return &PutNewOrderResponse{Status: "error"}, nil
+	}
+
 	go func() {
 		ko.NewOrders <- in
 	}()

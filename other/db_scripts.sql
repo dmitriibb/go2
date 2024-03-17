@@ -21,4 +21,7 @@ CREATE TABLE IF NOT EXISTS client_order_items
     constraint client_order_items_order_fk FOREIGN KEY (client_order_id) REFERENCES client_orders (id)
 );
 
+alter table client_order_items
+add constraint client_order_items_comment_not_err CHECK ( comment != 'error' ) NOT VALID;
+
 select * from client_orders;

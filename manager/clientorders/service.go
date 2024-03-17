@@ -2,6 +2,7 @@ package clientorders
 
 import (
 	"context"
+	"dmbb.com/go2/common/db/pg"
 	"dmbb.com/go2/common/logging"
 	"dmbb.com/go2/common/model"
 	"dmbb.com/go2/common/utils"
@@ -10,6 +11,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"strings"
 )
 
 const price = 10.0
@@ -20,9 +22,10 @@ var loggerService = logging.NewLogger("ManagerService")
 
 // NewOrder TODO add informative response
 func NewOrder(orderApi *model.ClientOrderDTO) {
-	// TODO start transaction use Context
+	ctx, ctxCancel := context.WithCancel(context.Background())
+	txWrapper := pg.StartTransaction(ctx)
 	order := &ClientOrder{ClientId: orderApi.ClientId}
-	order, err := SaveOrderInDb(order)
+	order, err := SaveOrderInDb(txWrapper, order)
 	if err != nil {
 		loggerService.Error("Can't save order in DB because %v", err)
 		panic(fmt.Sprintf("Can't save order in DB because %v", err))
@@ -35,10 +38,11 @@ func NewOrder(orderApi *model.ClientOrderDTO) {
 				OrderId:  order.Id,
 				ClientId: order.ClientId,
 				DishName: itemApi.DishName,
+				Comment:  itemApi.Comment,
 				// TODO add prices
 				Price: price,
 			}
-			item, err := SaveOrderItemInDb(item)
+			item, err := SaveOrderItemInDb(txWrapper, item)
 			if err != nil {
 				loggerService.Error("Can't save order item in DB because %v", err)
 				panic(fmt.Sprintf("Can't save order item in DB because %v", err))
@@ -47,10 +51,11 @@ func NewOrder(orderApi *model.ClientOrderDTO) {
 		}
 	}
 	order.Items = items
-	sendNewOrderEvent(order)
+	sendNewOrderEvent(ctx, ctxCancel, order)
+	txWrapper.Commit()
 }
 
-func sendNewOrderEvent(order *ClientOrder) {
+func sendNewOrderEvent(ctx context.Context, ctxCancel context.CancelFunc, order *ClientOrder) {
 	conn, err := grpc.Dial(kitchenServiceGrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		loggerService.Error("Can't call kitchen grpc because %v", err)
@@ -68,9 +73,13 @@ func sendNewOrderEvent(order *ClientOrder) {
 		}
 		items[i] = newItem
 	}
-	response, err := client.PutNewOrder(context.Background(), &handler.PutNewOrderRequest{OrderId: int32(order.Id), Items: items})
+	response, err := client.PutNewOrder(ctx, &handler.PutNewOrderRequest{OrderId: int32(order.Id), Items: items})
 	if err != nil {
 		panic(fmt.Sprintf("Can't call kitchen grpc because %v", err))
 	}
-	loggerService.Debug("Sent order %v PutNewOrderRequest to Kitchen. Response = %v", order.Id, response)
+	loggerService.Debug("Sent order %v PutNewOrderRequest to Kitchen. Response = %s", order.Id, response)
+	if strings.Contains(response.Status, "error") {
+		loggerService.Error("Error from kitchen service. Cancel ctx")
+		ctxCancel()
+	}
 }
