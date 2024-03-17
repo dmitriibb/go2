@@ -11,8 +11,9 @@ import (
 )
 
 func main() {
+	pg.Init()
+
 	httpPort := utils.GetEnvProperty(constants.HttpPortEnv)
-	pg.TestConnectPostgres()
 	http.HandleFunc("/", api.Hello)
 	http.HandleFunc("/order", clientorders.HttpHandleClientOrder)
 	http.ListenAndServe(fmt.Sprintf(":%v", httpPort), nil)

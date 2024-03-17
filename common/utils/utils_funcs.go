@@ -8,7 +8,7 @@ import (
 
 var logger = logging.NewLogger("CommonUtils")
 
-func GetEnvProperty(propertyName string) string {
+func GetEnvProperty(propertyName string, defaultVals ...string) string {
 	envMap, err := godotenv.Read()
 	if err != nil {
 		logger.Error("can't load .env file. %v", err.Error())
@@ -17,7 +17,11 @@ func GetEnvProperty(propertyName string) string {
 
 	res, ok := envMap[propertyName]
 	if ok == false {
-		panic(fmt.Sprintf("can't find %v in the .env file", propertyName))
+		if len(defaultVals) > 0 {
+			return defaultVals[0]
+		} else {
+			panic(fmt.Sprintf("can't find %v in the .env file", propertyName))
+		}
 	}
 	return res
 }

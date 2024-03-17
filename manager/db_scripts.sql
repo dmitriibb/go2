@@ -24,4 +24,4 @@ CREATE TABLE IF NOT EXISTS client_order_items
 alter table client_order_items
 add constraint client_order_items_comment_not_err CHECK ( comment != 'error db' ) NOT VALID;
 
-select * from client_orders;
+--select * from client_orders;

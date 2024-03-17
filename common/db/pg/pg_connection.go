@@ -5,9 +5,12 @@ import (
 	"database/sql"
 	"dmbb.com/go2/common/logging"
 	"dmbb.com/go2/common/utils"
+	commonInitializer "dmbb.com/go2/common/utils/initializer"
 	"fmt"
 	_ "github.com/lib/pq"
+	"os"
 	"strconv"
+	"strings"
 )
 
 var host = utils.GetEnvProperty(DbHostEnv)
@@ -15,10 +18,62 @@ var portString = utils.GetEnvProperty(DbPortEnv)
 var user = utils.GetEnvProperty(DbUserEnv)
 var password = utils.GetEnvProperty(DbPasswordEnv)
 var dbname = utils.GetEnvProperty(DbNameEnv)
+var dbInitMode = strings.ToLower(utils.GetEnvProperty(DbInitModeEnv, DbInitModeIgnore))
 
-var logger = logging.NewLogger("dbConnections")
+var logger = logging.NewLogger("PgConnections")
+var initializer = commonInitializer.New(logger)
 
 // TODO connection pool
+
+func Init() {
+	initFunc := func() error {
+		initDbTables()
+		return nil
+	}
+	initializer.Init(initFunc)
+}
+
+func initDbTables() {
+	switch dbInitMode {
+	case DbInitModeIgnore:
+		return
+	case DbInitModeRecreate, DbInitModeUpdate:
+		logger.Debug("initDbTables - dbInitMode")
+		file, err := os.ReadFile("db_scripts.sql")
+		if err != nil {
+			panic(err)
+		}
+		fullScript := string(file)
+		scripts := strings.Split(fullScript, ";")
+		for i, v := range scripts {
+			scripts[i] = strings.TrimSpace(v)
+		}
+		for _, script := range scripts {
+			firstLine := firstNotEmptyString(strings.Split(script, "\n"))
+			if len(firstLine) == 0 || strings.HasPrefix(firstLine, "--") {
+				continue
+			}
+			logger.Debug("execute - '%s'", firstLine)
+			f := func(db *sql.DB) any {
+				res, err := db.Exec(script)
+				if err != nil {
+					panic(err)
+				}
+				return res
+			}
+			UseConnection(f)
+		}
+	}
+}
+
+func firstNotEmptyString(lines []string) string {
+	for _, v := range lines {
+		if len(v) > 0 {
+			return v
+		}
+	}
+	return ""
+}
 
 func TestConnectPostgres() {
 	port, _ := strconv.Atoi(portString)
@@ -36,6 +91,7 @@ func TestConnectPostgres() {
 	}
 	logger.Info(fmt.Sprintf("Successfully connected to '%v'!", dbname))
 }
+
 func UseConnection(f func(db *sql.DB) any) any {
 	port, _ := strconv.Atoi(portString)
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
@@ -45,16 +101,16 @@ func UseConnection(f func(db *sql.DB) any) any {
 	if err != nil {
 		panic(err)
 	}
-	logger.Debug("db connection open")
+	//logger.Debug("db connection open")
 	defer func() {
 		connection.Close()
-		logger.Debug("db connection close")
+		//logger.Debug("db connection close")
 	}()
 	err = connection.Ping()
 	if err != nil {
 		panic(err)
 	}
-	logger.Debug("execute sql")
+	//logger.Debug("execute sql")
 	return f(connection)
 }
 func GetConnection() *sql.DB {
