@@ -1,12 +1,12 @@
 package main
 
 import (
-	"dmbb.com/go2/common/constants"
-	"dmbb.com/go2/common/db/pg"
-	"dmbb.com/go2/common/utils"
-	"dmbb.com/go2/manager/api"
-	"dmbb.com/go2/manager/clientorders"
 	"fmt"
+	"github.com/dmitriibb/go2/common/constants"
+	"github.com/dmitriibb/go2/common/db/pg"
+	"github.com/dmitriibb/go2/common/utils"
+	"github.com/dmitriibb/go2/manager/api"
+	"github.com/dmitriibb/go2/manager/clientorders"
 	"net/http"
 )
 

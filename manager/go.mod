@@ -3,6 +3,7 @@ module github.com/dmitriibb/go2/manager
 go 1.21
 
 replace github.com/dmitriibb/go2/common => ../common
+
 replace github.com/dmitriibb/go2/kitchen => ../kitchen
 
 require (

@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"dmbb.com/go2/common/constants"
-	"dmbb.com/go2/common/logging"
-	"dmbb.com/go2/common/utils"
-	"dmbb.com/go2/waiter/receiver"
-	"dmbb.com/go2/waiter/workers"
 	"fmt"
+	"github.com/dmitriibb/go2/common/constants"
+	"github.com/dmitriibb/go2/common/logging"
+	"github.com/dmitriibb/go2/common/utils"
+	"github.com/dmitriibb/go2/waiter/receiver"
+	"github.com/dmitriibb/go2/waiter/workers"
 	"net/http"
 	"os"
 	"os/signal"

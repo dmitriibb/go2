@@ -1,16 +1,16 @@
 package main
 
 import (
-	"dmbb.com/go2/common/constants"
-	"dmbb.com/go2/common/db/mongo"
-	"dmbb.com/go2/common/logging"
-	"dmbb.com/go2/common/utils"
 	"fmt"
+	"github.com/dmitriibb/go2/common/constants"
+	"github.com/dmitriibb/go2/common/db/mongo"
+	"github.com/dmitriibb/go2/common/logging"
+	"github.com/dmitriibb/go2/common/utils"
+	"github.com/dmitriibb/go2/kitchen/manager"
+	"github.com/dmitriibb/go2/kitchen/orders/handler"
+	"github.com/dmitriibb/go2/kitchen/recipes"
+	"github.com/dmitriibb/go2/kitchen/storage"
 	"google.golang.org/grpc"
-	"kitchen/manager"
-	"kitchen/orders/handler"
-	"kitchen/recipes"
-	"kitchen/storage"
 	"net"
 	"net/http"
 )
