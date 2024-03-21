@@ -2,7 +2,7 @@ package handler
 
 import (
 	"context"
-	"dmbb.com/go2/common/logging"
+	"github.com/dmitriibb/go2/common/logging"
 )
 
 var loggerService = logging.NewLogger("KitchenOrders")

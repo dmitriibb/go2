@@ -1,11 +1,11 @@
-module dmbb.com/go2/waiter
+module github.com/dmitriibb/go2/waiter
 
 go 1.21
 
-replace dmbb.com/go2/common => ../common
+replace github.com/dmitriibb/go2/common => ../common
 
 require (
-	dmbb.com/go2/common v0.0.0
+	github.com/dmitriibb/go2/common v0.0.0
 	github.com/rabbitmq/amqp091-go v1.9.0
 )
 

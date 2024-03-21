@@ -1,6 +1,6 @@
 package buffers
 
-import "kitchen/model"
+import "github.com/dmitriibb/go2/kitchen/model"
 
 // TODO add channel here in order to nox mix imports
 

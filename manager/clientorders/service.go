@@ -2,7 +2,6 @@ package clientorders
 
 import (
 	"context"
-	"dmbb.com/go2/manager/constants"
 	"errors"
 	"fmt"
 	"github.com/dmitriibb/go2/common/db/pg"
@@ -10,6 +9,7 @@ import (
 	"github.com/dmitriibb/go2/common/model"
 	"github.com/dmitriibb/go2/common/utils"
 	"github.com/dmitriibb/go2/kitchen/orders/handler"
+	"github.com/dmitriibb/go2/manager/constants"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"strings"

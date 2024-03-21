@@ -1,8 +1,8 @@
 package workers
 
 import (
-	"dmbb.com/go2/common/logging"
-	commonInitializer "dmbb.com/go2/common/utils/initializer"
+	"github.com/dmitriibb/go2/common/logging"
+	commonInitializer "github.com/dmitriibb/go2/common/utils/initializer"
 )
 
 var logger = logging.NewLogger("WorkersManager")

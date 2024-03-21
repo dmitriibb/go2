@@ -1,5 +1,5 @@
 package buffers
 
-import "dmbb.com/go2/common/model"
+import "github.com/dmitriibb/go2/common/model"
 
 var ReadyOrderItems = make(chan *model.ReadyOrderItem, 100)

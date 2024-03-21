@@ -3,10 +3,10 @@ package workers
 import (
 	"fmt"
 	"github.com/dmitriibb/go2/common/logging"
-	"kitchen/buffers"
-	"kitchen/model"
-	"kitchen/recipes"
-	"kitchen/storage"
+	"github.com/dmitriibb/go2/kitchen/buffers"
+	"github.com/dmitriibb/go2/kitchen/model"
+	"github.com/dmitriibb/go2/kitchen/recipes"
+	"github.com/dmitriibb/go2/kitchen/storage"
 	"time"
 )
 

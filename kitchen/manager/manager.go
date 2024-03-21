@@ -7,11 +7,11 @@ import (
 	"github.com/dmitriibb/go2/common/queue/rabbit"
 	"github.com/dmitriibb/go2/common/utils"
 	commonInitializer "github.com/dmitriibb/go2/common/utils/initializer"
+	"github.com/dmitriibb/go2/kitchen/buffers"
+	"github.com/dmitriibb/go2/kitchen/model"
+	"github.com/dmitriibb/go2/kitchen/orders/handler"
+	"github.com/dmitriibb/go2/kitchen/workers"
 	"github.com/mitchellh/hashstructure"
-	"kitchen/buffers"
-	"kitchen/model"
-	"kitchen/orders/handler"
-	"kitchen/workers"
 )
 
 var logger = logging.NewLogger("Manager")

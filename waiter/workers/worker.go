@@ -1,9 +1,9 @@
 package workers
 
 import (
-	"dmbb.com/go2/common/logging"
-	"dmbb.com/go2/waiter/buffers"
 	"fmt"
+	"github.com/dmitriibb/go2/common/logging"
+	"github.com/dmitriibb/go2/waiter/buffers"
 )
 
 type Worker struct {
