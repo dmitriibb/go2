@@ -1,9 +1,9 @@
 package clientorders
 
 import (
-	"dmbb.com/go2/common/db/pg"
-	"dmbb.com/go2/common/logging"
 	"fmt"
+	"github.com/dmitriibb/go2/common/db/pg"
+	"github.com/dmitriibb/go2/common/logging"
 	"strings"
 )
 

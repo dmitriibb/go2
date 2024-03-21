@@ -1,4 +1,4 @@
-module dmbb.com/go2/common
+module github.com/dmitriibb/go2/common
 
 go 1.21
 

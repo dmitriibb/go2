@@ -2,8 +2,8 @@ package mongo
 
 import (
 	"context"
-	"dmbb.com/go2/common/logging"
-	"dmbb.com/go2/common/utils"
+	"github.com/dmitriibb/go2/common/logging"
+	"github.com/dmitriibb/go2/common/utils"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

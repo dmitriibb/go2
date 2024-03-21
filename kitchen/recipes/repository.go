@@ -2,11 +2,11 @@ package recipes
 
 import (
 	"context"
-	commonMongo "dmbb.com/go2/common/db/mongo"
-	"dmbb.com/go2/common/logging"
-	commonInitializer "dmbb.com/go2/common/utils/initializer"
 	"encoding/json"
 	"fmt"
+	commonMongo "github.com/dmitriibb/go2/common/db/mongo"
+	"github.com/dmitriibb/go2/common/logging"
+	commonInitializer "github.com/dmitriibb/go2/common/utils/initializer"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

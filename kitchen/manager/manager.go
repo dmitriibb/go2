@@ -1,12 +1,12 @@
 package manager
 
 import (
-	"dmbb.com/go2/common/logging"
-	commonModel "dmbb.com/go2/common/model"
-	"dmbb.com/go2/common/queue/rabbit"
-	"dmbb.com/go2/common/utils"
-	commonInitializer "dmbb.com/go2/common/utils/initializer"
 	"fmt"
+	"github.com/dmitriibb/go2/common/logging"
+	commonModel "github.com/dmitriibb/go2/common/model"
+	"github.com/dmitriibb/go2/common/queue/rabbit"
+	"github.com/dmitriibb/go2/common/utils"
+	commonInitializer "github.com/dmitriibb/go2/common/utils/initializer"
 	"github.com/mitchellh/hashstructure"
 	"kitchen/buffers"
 	"kitchen/model"

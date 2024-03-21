@@ -2,10 +2,10 @@ package rabbit
 
 import (
 	"context"
-	"dmbb.com/go2/common/logging"
-	"dmbb.com/go2/common/utils"
 	"encoding/json"
 	"fmt"
+	"github.com/dmitriibb/go2/common/logging"
+	"github.com/dmitriibb/go2/common/utils"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"time"
 )

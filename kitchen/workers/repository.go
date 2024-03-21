@@ -2,8 +2,8 @@ package workers
 
 import (
 	"context"
-	commonNongo "dmbb.com/go2/common/db/mongo"
-	"dmbb.com/go2/common/logging"
+	commonNongo "github.com/dmitriibb/go2/common/db/mongo"
+	"github.com/dmitriibb/go2/common/logging"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

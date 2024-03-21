@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"dmbb.com/go2/common/logging"
 	"fmt"
+	"github.com/dmitriibb/go2/common/logging"
 	"github.com/joho/godotenv"
 )
 

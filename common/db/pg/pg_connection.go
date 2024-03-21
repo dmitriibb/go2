@@ -3,10 +3,10 @@ package pg
 import (
 	"context"
 	"database/sql"
-	"dmbb.com/go2/common/logging"
-	"dmbb.com/go2/common/utils"
-	commonInitializer "dmbb.com/go2/common/utils/initializer"
 	"fmt"
+	"github.com/dmitriibb/go2/common/logging"
+	"github.com/dmitriibb/go2/common/utils"
+	commonInitializer "github.com/dmitriibb/go2/common/utils/initializer"
 	_ "github.com/lib/pq"
 	"os"
 	"strconv"

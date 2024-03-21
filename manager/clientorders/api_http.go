@@ -1,10 +1,10 @@
 package clientorders
 
 import (
-	"dmbb.com/go2/common/logging"
-	"dmbb.com/go2/common/model"
 	"encoding/json"
 	"fmt"
+	"github.com/dmitriibb/go2common/logging"
+	"github.com/dmitriibb/go2common/model"
 	"net/http"
 )
 

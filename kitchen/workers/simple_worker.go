@@ -1,8 +1,8 @@
 package workers
 
 import (
-	"dmbb.com/go2/common/logging"
 	"fmt"
+	"github.com/dmitriibb/go2/common/logging"
 	"kitchen/buffers"
 	"kitchen/model"
 	"kitchen/recipes"

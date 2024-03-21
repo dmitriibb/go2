@@ -1,14 +1,13 @@
-module dmbb.com/go2/manager
+module github.com/dmitriibb/go2/manager
 
 go 1.21
 
-replace dmbb.com/go2/common => ../common
-
-replace dmbb.com/go2/kitchen => ../kitchen
+replace github.com/dmitriibb/go2/common => ../common
+replace github.com/dmitriibb/go2/kitchen => ../kitchen
 
 require (
-	dmbb.com/go2/common v0.0.0
-	dmbb.com/go2/kitchen v0.0.0
+	github.com/dmitriibb/go2/common v0.0.0
+	github.com/dmitriibb/go2/kitchen v0.0.0
 	google.golang.org/grpc v1.62.0
 )
 

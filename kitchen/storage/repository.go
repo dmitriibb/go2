@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"dmbb.com/go2/common/logging"
+	"github.com/dmitriibb/go2/common/logging"
 	"time"
 )
 
