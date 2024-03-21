@@ -10,6 +10,7 @@ import (
 	"github.com/dmitriibb/go2/kitchen/orders/handler"
 	"github.com/dmitriibb/go2/kitchen/recipes"
 	"github.com/dmitriibb/go2/kitchen/storage"
+	"github.com/dmitriibb/go3"
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 var logger = logging.NewLogger("KitchenMain")
 
 func main() {
+	go3.TestHelloWorld()
 	logger.Info("start")
 	httpPort := utils.GetEnvProperty(constants.HttpPortEnv)
 	grpcPort := utils.GetEnvProperty(constants.GrpcPortEnv)

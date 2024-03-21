@@ -5,7 +5,8 @@ go 1.21
 //replace github.com/dmitriibb/go2/common => ../common
 
 require (
-	github.com/dmitriibb/go2/common v0.0.2
+	github.com/dmitriibb/go2/common v0.0.0-20240321120712-a3f5e3bdce88
+	github.com/dmitriibb/go3 v0.1.1
 	github.com/mitchellh/hashstructure v1.1.0
 	go.mongodb.org/mongo-driver v1.14.0
 	google.golang.org/grpc v1.62.0
