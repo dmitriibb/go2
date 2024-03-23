@@ -1,13 +1,13 @@
 module github.com/dmitriibb/go2/manager
 
-go 1.21
+go 1.21.4
 
 //replace github.com/dmitriibb/go2/common => ../common
 //replace github.com/dmitriibb/go2/kitchen => ../kitchen
 
 require (
-	github.com/dmitriibb/go2/common v0.0.2
-	github.com/dmitriibb/go2/kitchen v0.0.2
+	github.com/dmitriibb/go-common v0.0.1
+	github.com/dmitriibb/go2-kitchen v0.0.2
 	google.golang.org/grpc v1.62.0
 )
 

@@ -3,8 +3,8 @@ package clientorders
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dmitriibb/go2/common/logging"
-	"github.com/dmitriibb/go2/common/model"
+	"github.com/dmitriibb/go-common/logging"
+	"github.com/dmitriibb/go-common/restaurant-common/model"
 	"net/http"
 )
 

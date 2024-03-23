@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/dmitriibb/go2/common/db/pg"
-	"github.com/dmitriibb/go2/common/logging"
-	"github.com/dmitriibb/go2/common/model"
-	"github.com/dmitriibb/go2/common/utils"
-	"github.com/dmitriibb/go2/kitchen/orders/handler"
+	"github.com/dmitriibb/go-common/db/pg"
+	"github.com/dmitriibb/go-common/logging"
+	"github.com/dmitriibb/go-common/restaurant-common/model"
+	"github.com/dmitriibb/go-common/utils"
+	"github.com/dmitriibb/go2-kitchen/pkg/orders"
 	"github.com/dmitriibb/go2/manager/constants"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -82,17 +82,17 @@ func sendNewOrderEvent(ctx context.Context, ctxCancel context.CancelFunc, order 
 	}
 	defer conn.Close()
 
-	client := handler.NewKitchenOrdersHandlerClient(conn)
-	items := make([]*handler.NewOrderItem, len(order.Items))
+	client := orders.NewKitchenOrdersHandlerClient(conn)
+	items := make([]*orders.NewOrderItem, len(order.Items))
 	for i, item := range order.Items {
-		newItem := &handler.NewOrderItem{
+		newItem := &orders.NewOrderItem{
 			DishName: item.DishName,
 			ItemId:   int32(item.ItemId),
 			Comment:  item.Comment,
 		}
 		items[i] = newItem
 	}
-	response, err := client.PutNewOrder(ctx, &handler.PutNewOrderRequest{OrderId: int32(order.Id), Items: items})
+	response, err := client.PutNewOrder(ctx, &orders.PutNewOrderRequest{OrderId: int32(order.Id), Items: items})
 	if err != nil {
 		panic(fmt.Sprintf("Can't call kitchen grpc because %v", err))
 	}

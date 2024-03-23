@@ -1,6 +1,0 @@
-uri: amqp://guest:guest@localhost:5672/
-queues:
-  - name: readyOrders
-    durable: true
-    autoDelete: false
-    persistent: true

@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/dmitriibb/go2/common/constants"
-	"github.com/dmitriibb/go2/common/db/pg"
-	"github.com/dmitriibb/go2/common/utils"
+	"github.com/dmitriibb/go-common/constants"
+	"github.com/dmitriibb/go-common/db/pg"
+	"github.com/dmitriibb/go-common/utils"
 	"github.com/dmitriibb/go2/manager/api"
 	"github.com/dmitriibb/go2/manager/clientorders"
 	"net/http"
