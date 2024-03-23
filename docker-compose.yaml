@@ -5,9 +5,34 @@ services:
   db:
     image: postgres
     # restart: always
-    container_name: pg-kitchen
+    container_name: go2-pg
     ports:
       - 5433:5432
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: qwerty1
+    volumes:
+      - ./docker-init-db.sql:/docker-entrypoint-initdb.d/docker-init-db.sql
+
+  go2-pg-admin:
+    image: dpage/pgadmin4
+    container_name: go2-pg-admin
+    # restart: always
+    ports:
+      - 5451:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: user@user.com
+      PGADMIN_DEFAULT_PASSWORD: qwerty1
+
+  manager:
+#    image: go2-manager
+    build:
+      context: ./
+      dockerfile: ./manager/Dockerfile
+    container_name: go2-manager
+    ports:
+      - 9010:9010
+    environment:
+      DOT_ENV_FILE_NAME: docker.env
+
+
