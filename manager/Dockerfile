@@ -2,7 +2,7 @@ FROM golang:1.19
 LABEL authors="dmitrii"
 
 WORKDIR /app
-COPY ./manager .
+COPY ./ ./
 
 #COPY go.mod go.sum ./
 RUN go mod download
