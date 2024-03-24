@@ -17,7 +17,8 @@ import (
 
 const price = 10.0
 
-var kitchenServiceGrpcUrl = utils.GetEnvProperty(constants.KitchenGrpcPortEnv)
+var kitchenServiceUrl = utils.GetEnvProperty(constants.KitchenUrlEnv)
+var kitchenServiceGrpcPort = utils.GetEnvProperty(constants.KitchenGrpcPortEnv)
 
 var loggerService = logging.NewLogger("ManagerService")
 
@@ -75,12 +76,13 @@ func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 }
 
 func sendNewOrderEvent(ctx context.Context, ctxCancel context.CancelFunc, order *ClientOrder) {
-	conn, err := grpc.Dial(kitchenServiceGrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%s", kitchenServiceUrl, kitchenServiceGrpcPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		loggerService.Error("Can't call kitchen grpc because %v", err)
 		panic(fmt.Sprintf("Can't call kitchen grpc because %v", err))
 	}
 	defer conn.Close()
+	loggerService.Error("grpc.Dial success to %s, conn.Connect() = %s", fmt.Sprintf("%s:%s", kitchenServiceUrl, kitchenServiceGrpcPort), conn.GetState())
 
 	client := orders.NewKitchenOrdersHandlerClient(conn)
 	items := make([]*orders.NewOrderItem, len(order.Items))

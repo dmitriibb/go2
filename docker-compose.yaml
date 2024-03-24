@@ -4,10 +4,7 @@ services:
 
   go2-db-pg:
     image: postgres
-    # restart: always
     container_name: go2-pg
-    ports:
-      - "5433:5432"
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: qwerty1
@@ -27,6 +24,32 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: user@user.com
       PGADMIN_DEFAULT_PASSWORD: qwerty1
+
+  go2-mongodb:
+    image: mongo:7.0.5-jammy
+    container_name: go2-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: qwerty1
+      MONGO_INITDB_DATABASE: go2_kitchen
+
+  go2-rabbit:
+    image: rabbitmq:3.13-management
+    # restart: always
+    container_name: go2-rabbit
+
+  go2-kitchen:
+    build:
+      context: /home/dmitrii/projects/go2-kitchen
+    container_name: go2-kitchen
+    ports:
+      - "9020:9020"
+      - "9120:9120"
+    environment:
+      DOT_ENV_FILE_NAME: docker.env
+    depends_on:
+      - go2-mongodb
+      - go2-rabbit
 
   go2-manager:
     build:
