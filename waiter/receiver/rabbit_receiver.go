@@ -3,11 +3,11 @@ package receiver
 import (
 	"context"
 	"encoding/json"
-	"github.com/dmitriibb/go2/common/logging"
-	"github.com/dmitriibb/go2/common/model"
-	"github.com/dmitriibb/go2/common/queue/rabbit"
-	"github.com/dmitriibb/go2/common/utils"
-	commonInitializer "github.com/dmitriibb/go2/common/utils/initializer"
+	"github.com/dmitriibb/go-common/logging"
+	"github.com/dmitriibb/go-common/queue/rabbit"
+	"github.com/dmitriibb/go-common/restaurant-common/model"
+	"github.com/dmitriibb/go-common/utils"
+	commonInitializer "github.com/dmitriibb/go-common/utils/initializer"
 	"github.com/dmitriibb/go2/waiter/buffers"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"strings"
@@ -16,7 +16,7 @@ import (
 
 var logger = logging.NewLogger("RabbitReceiver")
 var initializer = commonInitializer.New(logger)
-var rabbitUri = utils.GetEnvProperty(rabbit.RabbitMqUriEnv)
+var rabbitUri = rabbit.GetUri()
 var myCtx context.Context
 var myCtxCancel context.CancelFunc
 var readyOrdersQueueName = utils.GetEnvProperty("READY_ORDERS_QUEUE_NAME")
@@ -26,12 +26,17 @@ func Init(ctx context.Context) {
 	initFunc := func() error {
 		myCtx, myCtxCancel = context.WithCancel(ctx)
 
+		logger.Debug("rabbit uri %s", rabbitUri)
+
 		qConfig, err := rabbit.GetQueueConfig(readyOrdersQueueName)
 		if err != nil {
 			return err
 		}
 		readyOrderItemsQueueConfig = qConfig
+		logger.Debug("readyOrderItemsQueueConfig %s", readyOrderItemsQueueConfig)
 
+		//time.Sleep(5 * time.Second)
+		//logger.Debug("listen to the %s topic after 10 seconds delay", readyOrderItemsQueueConfig.Name)
 		listenToReadyOrdersFromKitchen(myCtx)
 
 		//listenToQueueHello()

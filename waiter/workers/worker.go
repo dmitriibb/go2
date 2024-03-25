@@ -2,7 +2,7 @@ package workers
 
 import (
 	"fmt"
-	"github.com/dmitriibb/go2/common/logging"
+	"github.com/dmitriibb/go-common/logging"
 	"github.com/dmitriibb/go2/waiter/buffers"
 )
 

@@ -1,4 +1,4 @@
-version: '3.3'
+#version: '3.8'
 
 services:
 
@@ -18,7 +18,6 @@ services:
   go2-pg-admin:
     image: dpage/pgadmin4
     container_name: go2-pg-admin
-    # restart: always
     ports:
       - "5451:80"
     environment:
@@ -35,16 +34,17 @@ services:
 
   go2-rabbit:
     image: rabbitmq:3.13-management
-    # restart: always
     container_name: go2-rabbit
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 3
 
   go2-kitchen:
     build:
       context: /home/dmitrii/projects/go2-kitchen
     container_name: go2-kitchen
-    ports:
-      - "9020:9020"
-      - "9120:9120"
     environment:
       DOT_ENV_FILE_NAME: docker.env
     depends_on:
@@ -63,5 +63,16 @@ services:
     depends_on:
       go2-db-pg:
         condition: service_healthy
+
+  go2-waiter:
+    build:
+      context: ./waiter
+    container_name: go2-waiter
+    environment:
+      DOT_ENV_FILE_NAME: docker.env
+    depends_on:
+      go2-rabbit:
+        condition: service_healthy
+
 
 
