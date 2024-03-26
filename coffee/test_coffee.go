@@ -5,5 +5,5 @@ func HelloCoffee() {
 }
 
 func ByeCoffee() {
-	println("bye coffee")
+	println("bye coffee!")
 }
