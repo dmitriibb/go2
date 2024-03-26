@@ -30,7 +30,8 @@ func newOrder(w http.ResponseWriter, r *http.Request) {
 			loggerApiHttp.Error("Can't process new order because '%v'", r)
 		}
 	}()
-	NewOrder(order)
+	res := NewOrder(order)
 	loggerApiHttp.Debug("Created new order %v", order)
-	fmt.Fprintf(w, "Created new order %v", order)
+	json.NewEncoder(w).Encode(res)
+	//fmt.Fprintf(w, "Created new order %v", order)
 }
