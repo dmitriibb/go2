@@ -8,8 +8,9 @@ import (
 	"github.com/dmitriibb/go-common/logging"
 	"github.com/dmitriibb/go-common/restaurant-common/model"
 	"github.com/dmitriibb/go-common/utils"
+	commonInitializer "github.com/dmitriibb/go-common/utils/initializer"
 	"github.com/dmitriibb/go2-kitchen/pkg/orders"
-	"github.com/dmitriibb/go2/manager/constants"
+	"github.com/dmitriibb/go2/manager/internal/constants"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"strings"
@@ -17,18 +18,31 @@ import (
 
 const price = 10.0
 
-var kitchenServiceUrl = utils.GetEnvProperty(constants.KitchenUrlEnv)
-var kitchenServiceGrpcPort = utils.GetEnvProperty(constants.KitchenGrpcPortEnv)
-
 var loggerService = logging.NewLogger("ManagerService")
+var initializer = commonInitializer.New(loggerService)
+
+var initFunc = func() error {
+	kitchenServiceUrl = utils.GetEnvProperty(constants.KitchenUrlEnv)
+	kitchenServiceGrpcPort = utils.GetEnvProperty(constants.KitchenGrpcPortEnv)
+	return nil
+}
+var kitchenServiceUrl string
+var kitchenServiceGrpcPort string
+
+var StartTransaction func(ctx context.Context) pg.TxWrapperer = pg.StartTransaction
+
+func Init() {
+	initializer.Init(initFunc)
+}
 
 // NewOrder TODO add informative response
 func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 	ctx, ctxCancel := context.WithCancel(context.Background())
 	defer ctxCancel()
-	txWrapper := pg.StartTransaction(ctx)
+	transaction := StartTransaction(ctx)
+	defer transaction.Rollback()
 	order := &ClientOrder{ClientId: orderApi.ClientId}
-	order, err := SaveOrderInDb(txWrapper, order)
+	order, err := SaveOrderInDb(transaction, order)
 	if err != nil {
 		loggerService.Error("Can't save order in DB because %v", err)
 		ctxCancel()
@@ -46,7 +60,7 @@ func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 				// TODO add prices
 				Price: price,
 			}
-			item, err := SaveOrderItemInDb(txWrapper, item)
+			item, err := SaveOrderItemInDb(transaction, item)
 			if err != nil {
 				loggerService.Error("Can't save order item in DB because %v", err)
 				ctxCancel()
@@ -63,7 +77,7 @@ func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 		}
 	}
 	order.Items = items
-	sendNewOrderEvent(ctx, ctxCancel, order)
+	SendNewOrderEvent(ctx, ctxCancel, order)
 
 	err = ctx.Err()
 	if err != nil && errors.Is(err, context.Canceled) {
@@ -71,18 +85,20 @@ func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 		return &model.ClientOrderResponseDTO{"Fail"}
 	}
 
-	txWrapper.Commit()
+	transaction.Commit()
 	return &model.ClientOrderResponseDTO{"Success"}
 }
+
+var SendNewOrderEvent = sendNewOrderEvent
 
 func sendNewOrderEvent(ctx context.Context, ctxCancel context.CancelFunc, order *ClientOrder) {
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%s", kitchenServiceUrl, kitchenServiceGrpcPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		loggerService.Error("Can't call kitchen grpc because %v", err)
-		panic(fmt.Sprintf("Can't call kitchen grpc because %v", err))
+		loggerService.Error("Can't dial kitchen grpc because %v", err)
+		panic(fmt.Sprintf("Can't dial kitchen grpc because %v", err))
 	}
 	defer conn.Close()
-	loggerService.Error("grpc.Dial success to %s, conn.Connect() = %s", fmt.Sprintf("%s:%s", kitchenServiceUrl, kitchenServiceGrpcPort), conn.GetState())
+	loggerService.Debug("grpc.Dial success to %s, conn.Connect() = %s", fmt.Sprintf("%s:%s", kitchenServiceUrl, kitchenServiceGrpcPort), conn.GetState())
 
 	client := orders.NewKitchenOrdersHandlerClient(conn)
 	items := make([]*orders.NewOrderItem, len(order.Items))
@@ -96,7 +112,7 @@ func sendNewOrderEvent(ctx context.Context, ctxCancel context.CancelFunc, order 
 	}
 	response, err := client.PutNewOrder(ctx, &orders.PutNewOrderRequest{OrderId: int32(order.Id), Items: items})
 	if err != nil {
-		panic(fmt.Sprintf("Can't call kitchen grpc because %v", err))
+		panic(fmt.Sprintf("Can't call kitchen grpc PutNewOrder() because %v", err))
 	}
 	loggerService.Debug("Sent order %v PutNewOrderRequest to Kitchen. Response = %s", order.Id, response)
 	if strings.Contains(response.Status, "error") {

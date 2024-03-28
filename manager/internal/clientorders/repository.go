@@ -9,7 +9,12 @@ import (
 
 var loggerRepo = logging.NewLogger("ordersRepository")
 
-func SaveOrderInDb(txWrapper *pg.TxWrapper, order *ClientOrder) (*ClientOrder, error) {
+var SaveOrderInDb = saveOrderInDb
+var SaveOrderItemInDb = saveOrderItemInDb
+
+func saveOrderInDb(txWrapper pg.TxWrapperer, order *ClientOrder) (*ClientOrder, error) {
+	// will fail with mock tx wrapper
+	txWrapperCasted := txWrapper.(*pg.TxWrapper)
 	query := "INSERT INTO client_orders (client_id) VALUES ($1) RETURNING id"
 	var err error
 	if strings.HasSuffix(order.ClientId, "error") {
@@ -17,7 +22,7 @@ func SaveOrderInDb(txWrapper *pg.TxWrapper, order *ClientOrder) (*ClientOrder, e
 		panic("Fake panic because clientId has error")
 	}
 	id := -1
-	row := txWrapper.Tx.QueryRow(query, order.ClientId)
+	row := txWrapperCasted.Tx.QueryRow(query, order.ClientId)
 	err = row.Scan(&id)
 	if err != nil {
 		loggerRepo.Error("Can't scan inserted id because %v", err)
@@ -28,13 +33,15 @@ func SaveOrderInDb(txWrapper *pg.TxWrapper, order *ClientOrder) (*ClientOrder, e
 	return order, err
 }
 
-func SaveOrderItemInDb(txWrapper *pg.TxWrapper, orderItem *ClientOrderItem) (*ClientOrderItem, error) {
+func saveOrderItemInDb(txWrapper pg.TxWrapperer, orderItem *ClientOrderItem) (*ClientOrderItem, error) {
+	// will fail with mock tx wrapper
+	txWrapperCasted := txWrapper.(*pg.TxWrapper)
 	query := `INSERT INTO client_order_items 
     	(client_order_id, client_id, dish_name, comment, price)
 		VALUES ($1, $2, $3, $4, $5) RETURNING id`
 	var err error
 	id := -1
-	row := txWrapper.Tx.QueryRow(query, orderItem.OrderId, orderItem.ClientId, orderItem.DishName, orderItem.Comment, orderItem.Price)
+	row := txWrapperCasted.Tx.QueryRow(query, orderItem.OrderId, orderItem.ClientId, orderItem.DishName, orderItem.Comment, orderItem.Price)
 	err = row.Scan(&id)
 	if err != nil {
 		loggerRepo.Error(fmt.Sprintf("error = %v", err))
