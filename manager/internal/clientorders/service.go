@@ -41,8 +41,8 @@ func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 	defer ctxCancel()
 	transaction := StartTransaction(ctx)
 	defer transaction.Rollback()
-	order := &ClientOrder{ClientId: orderApi.ClientId}
-	order, err := SaveOrderInDb(transaction, order)
+	order := ClientOrder{ClientId: orderApi.ClientId}
+	orderSaved, err := SaveOrderInDb(transaction, order)
 	if err != nil {
 		loggerService.Error("Can't save order in DB because %v", err)
 		ctxCancel()
@@ -52,7 +52,7 @@ func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 	// Items with prices
 	for _, itemApi := range orderApi.Items {
 		for i := 0; i < itemApi.Quantity; i++ {
-			item := &ClientOrderItem{
+			item := ClientOrderItem{
 				OrderId:  order.Id,
 				ClientId: order.ClientId,
 				DishName: itemApi.DishName,
@@ -60,7 +60,7 @@ func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 				// TODO add prices
 				Price: price,
 			}
-			item, err := SaveOrderItemInDb(transaction, item)
+			itemSaved, err := SaveOrderItemInDb(transaction, item)
 			if err != nil {
 				loggerService.Error("Can't save order item in DB because %v", err)
 				ctxCancel()
@@ -73,11 +73,11 @@ func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 				return &model.ClientOrderResponseDTO{"Fail"}
 			}
 
-			items = append(items, item)
+			items = append(items, itemSaved)
 		}
 	}
 	order.Items = items
-	SendNewOrderEvent(ctx, ctxCancel, order)
+	SendNewOrderEvent(ctx, ctxCancel, orderSaved)
 
 	err = ctx.Err()
 	if err != nil && errors.Is(err, context.Canceled) {

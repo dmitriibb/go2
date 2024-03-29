@@ -12,7 +12,7 @@ var loggerRepo = logging.NewLogger("ordersRepository")
 var SaveOrderInDb = saveOrderInDb
 var SaveOrderItemInDb = saveOrderItemInDb
 
-func saveOrderInDb(txWrapper pg.TxWrapperer, order *ClientOrder) (*ClientOrder, error) {
+func saveOrderInDb(txWrapper pg.TxWrapperer, order ClientOrder) (*ClientOrder, error) {
 	// will fail with mock tx wrapper
 	txWrapperCasted := txWrapper.(*pg.TxWrapper)
 	query := "INSERT INTO client_orders (client_id) VALUES ($1) RETURNING id"
@@ -30,10 +30,10 @@ func saveOrderInDb(txWrapper pg.TxWrapperer, order *ClientOrder) (*ClientOrder, 
 		loggerRepo.Debug("Order saved with id %v", id)
 	}
 	order.Id = id
-	return order, err
+	return &order, err
 }
 
-func saveOrderItemInDb(txWrapper pg.TxWrapperer, orderItem *ClientOrderItem) (*ClientOrderItem, error) {
+func saveOrderItemInDb(txWrapper pg.TxWrapperer, orderItem ClientOrderItem) (*ClientOrderItem, error) {
 	// will fail with mock tx wrapper
 	txWrapperCasted := txWrapper.(*pg.TxWrapper)
 	query := `INSERT INTO client_order_items 
@@ -49,5 +49,5 @@ func saveOrderItemInDb(txWrapper pg.TxWrapperer, orderItem *ClientOrderItem) (*C
 		loggerRepo.Debug(fmt.Sprintf("Order item saved with id %v", id))
 	}
 	orderItem.ItemId = id
-	return orderItem, err
+	return &orderItem, err
 }
