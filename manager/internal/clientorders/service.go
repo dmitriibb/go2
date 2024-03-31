@@ -53,8 +53,8 @@ func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 	for _, itemApi := range orderApi.Items {
 		for i := 0; i < itemApi.Quantity; i++ {
 			item := ClientOrderItem{
-				OrderId:  order.Id,
-				ClientId: order.ClientId,
+				OrderId:  orderSaved.Id,
+				ClientId: orderSaved.ClientId,
 				DishName: itemApi.DishName,
 				Comment:  itemApi.Comment,
 				// TODO add prices
@@ -76,7 +76,7 @@ func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 			items = append(items, itemSaved)
 		}
 	}
-	order.Items = items
+	orderSaved.Items = items
 	SendNewOrderEvent(ctx, ctxCancel, orderSaved)
 
 	err = ctx.Err()

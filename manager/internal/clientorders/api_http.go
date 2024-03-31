@@ -27,7 +27,9 @@ func newOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() {
 		if r := recover(); r != nil {
-			loggerApiHttp.Error("Can't process new order because '%v'", r)
+			erMsg := fmt.Sprintf("Can't process new order because '%v'", r)
+			loggerApiHttp.Error(erMsg)
+			fmt.Fprintf(w, erMsg)
 		}
 	}()
 	res := NewOrder(order)

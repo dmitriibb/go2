@@ -13,6 +13,19 @@ var transactionMockRollback = false
 
 func TestNewOrderSuccess(t *testing.T) {
 	// given
+	order := &model.ClientOrderDTO{
+		ClientId: "test_client",
+		Items: []model.OrderItemDTO{
+			{
+				DishName: "cola",
+				Quantity: 1,
+			},
+			{
+				DishName: "coffee",
+				Quantity: 2,
+			},
+		},
+	}
 	transactionMockCommit = false
 	transactionMockRollback = false
 
@@ -43,22 +56,12 @@ func TestNewOrderSuccess(t *testing.T) {
 	SendNewOrderEvent = func(ctx context.Context, ctxCancel context.CancelFunc, order *ClientOrder) {
 		sentToGrpc = true
 		actualOrderId = order.Id
+		if len(order.Items) != 3 {
+			t.Errorf("Send to kitchen items number actual %v, expected %v", len(order.Items), 3)
+		}
 	}
 
 	//when
-	order := &model.ClientOrderDTO{
-		ClientId: "test_client",
-		Items: []model.OrderItemDTO{
-			{
-				DishName: "cola",
-				Quantity: 1,
-			},
-			{
-				DishName: "coffee",
-				Quantity: 2,
-			},
-		},
-	}
 	actualResponse := NewOrder(order)
 
 	//then
@@ -73,6 +76,11 @@ func TestNewOrderSuccess(t *testing.T) {
 	}
 	if len(savedItems) != 3 {
 		t.Errorf("saved %v order items, expected %v", len(savedItems), 3)
+	}
+	for _, item := range savedItems {
+		if item.OrderId != expectedOrderId {
+			t.Errorf("item %+v order id different from expected order id %v", item, expectedOrderId)
+		}
 	}
 	if !sentToGrpc {
 		t.Errorf("Send to kitchen service grpc has not been called")

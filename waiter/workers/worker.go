@@ -23,7 +23,7 @@ func (w *Worker) Start() {
 	go func() {
 		for {
 			readyItem := <-buffers.ReadyOrderItems
-			w.logger.Info("get ready order item %s and take it to the client", readyItem)
+			w.logger.Info("get ready order item %+v and take it to the client", readyItem)
 		}
 	}()
 }
