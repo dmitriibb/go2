@@ -6,8 +6,8 @@ COPY ./ ./
 
 RUN go mod download
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /go2-waiter
+RUN CGO_ENABLED=0 GOOS=linux go build -o /go2-client
 
-EXPOSE 9030
+EXPOSE 9040
 
-CMD ["/go2-waiter"]
+CMD ["/go2-client"]

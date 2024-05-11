@@ -8,6 +8,7 @@ import (
 	"github.com/dmitriibb/go-common/utils"
 	"github.com/dmitriibb/go2/manager/internal/api"
 	"github.com/dmitriibb/go2/manager/internal/clientorders"
+	"github.com/dmitriibb/go2/manager/internal/hostes"
 	"net/http"
 )
 
@@ -20,6 +21,7 @@ func main() {
 	httpPort := utils.GetEnvProperty(constants.HttpPortEnv)
 	http.HandleFunc("/", api.Hello)
 	http.HandleFunc("/order", clientorders.HttpHandleClientOrder)
+	http.HandleFunc("/hostes/enter", hostes.HandleClientEnter)
 
 	go func() {
 		http.ListenAndServe(fmt.Sprintf(":%v", httpPort), nil)
