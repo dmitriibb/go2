@@ -24,5 +24,14 @@ CREATE TABLE IF NOT EXISTS client_order_items
 alter table client_order_items
 add constraint client_order_items_comment_not_err CHECK ( comment != 'error db' ) NOT VALID;
 
+CREATE TABLE IF NOT EXISTS menu
+(
+    id serial NOT NULL,
+    name varchar(255) not null,
+    description varchar(255) NOT NULL,
+    price numeric(5,2) NOT NULL,
+    version integer not null
+);
+
 --select * from client_orders;
 --

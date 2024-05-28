@@ -66,6 +66,11 @@ func (c *client) GoToTheTable() {
 
 func (c *client) AskForMenu() {
 	c.logger.Info("asking for the menu")
+	menu, err := askForMenu()
+	if err != nil {
+		panic(err.Error())
+	}
+	c.logger.Info("received menu with %v items", len(menu.Items))
 }
 
 func (c *client) MakeOrder() {

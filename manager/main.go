@@ -9,6 +9,7 @@ import (
 	"github.com/dmitriibb/go2/manager/internal/api"
 	"github.com/dmitriibb/go2/manager/internal/clientorders"
 	"github.com/dmitriibb/go2/manager/internal/hostes"
+	"github.com/dmitriibb/go2/manager/internal/menu"
 	"net/http"
 )
 
@@ -22,6 +23,7 @@ func main() {
 	http.HandleFunc("/", api.Hello)
 	http.HandleFunc("/order", clientorders.HttpHandleClientOrder)
 	http.HandleFunc("/hostes/enter", hostes.HandleClientEnter)
+	http.HandleFunc("/menu", menu.HandleMenuRequest)
 
 	go func() {
 		http.ListenAndServe(fmt.Sprintf(":%v", httpPort), nil)

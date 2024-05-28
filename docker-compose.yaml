@@ -74,5 +74,15 @@ services:
       go2-rabbit:
         condition: service_healthy
 
+  go2-client:
+    build:
+      context: ./client
+    container_name: go2-client
+    environment:
+      DOT_ENV_FILE_NAME: docker.env
+    depends_on:
+      go2-rabbit:
+        condition: service_healthy
+
 
 
