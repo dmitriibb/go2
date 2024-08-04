@@ -1,10 +1,15 @@
 package client
 
 import (
+	"client/internal/utils"
 	"fmt"
 	"github.com/dmitriibb/go-common/logging"
 	"github.com/dmitriibb/go-common/restaurant-common/model/clientmodel"
 	"time"
+)
+
+const (
+	orderItemsLimit int = 3
 )
 
 type Client interface {
@@ -20,10 +25,11 @@ type Client interface {
 }
 
 type client struct {
-	Name        string
-	logger      logging.Logger
-	Id          string
-	TableNumber int
+	Name         string
+	logger       logging.Logger
+	Id           string
+	TableNumber  int
+	OrderedItems []string
 }
 
 func New(clientName string) Client {
@@ -71,10 +77,17 @@ func (c *client) AskForMenu() {
 		panic(err.Error())
 	}
 	c.logger.Info("received menu with %v items", len(menu.Items))
+
+	clientMaxOrder := utils.GetRandomInt(orderItemsLimit) + 1
+	for i := 0; i < clientMaxOrder; i++ {
+		indexToOrder := utils.GetRandomInt(len(menu.Items))
+		itemToOrder := menu.Items[indexToOrder]
+		c.OrderedItems = append(c.OrderedItems, itemToOrder.Name)
+	}
 }
 
 func (c *client) MakeOrder() {
-	c.logger.Info("making an order")
+	c.logger.Info("ordered %v", c.OrderedItems)
 }
 
 func (c *client) WaitForOrder() {

@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-var maiLogger = logging.NewLogger("Main")
+var maiLogger = logging.NewLogger("Waiter - Main")
 var httpPort = utils.GetEnvProperty(constants.HttpPortEnv)
 
 func main() {

@@ -1,5 +1,0 @@
-package tables
-
-func name() {
-
-}
