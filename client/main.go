@@ -8,7 +8,7 @@ import (
 var logger = logging.NewLogger("Clients-main")
 
 func main() {
-	logger.Debug("Starting")
+	logger.Debug("Starting...")
 
 	go clientmanager.StartRandomClients()
 
