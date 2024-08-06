@@ -6,10 +6,10 @@ import (
 	"github.com/dmitriibb/go-common/db/pg"
 	"github.com/dmitriibb/go-common/logging"
 	"github.com/dmitriibb/go-common/utils"
-	"github.com/dmitriibb/go2/manager/internal/api"
 	"github.com/dmitriibb/go2/manager/internal/clientorders"
 	"github.com/dmitriibb/go2/manager/internal/hostes"
 	"github.com/dmitriibb/go2/manager/internal/menu"
+	"github.com/dmitriibb/go2/manager/internal/testapi"
 	"net/http"
 )
 
@@ -20,10 +20,10 @@ func main() {
 	clientorders.Init()
 
 	httpPort := utils.GetEnvProperty(constants.HttpPortEnv)
-	http.HandleFunc("/", api.Hello)
-	http.HandleFunc("/order", clientorders.HttpHandleClientOrder)
-	http.HandleFunc("/hostes/enter", hostes.HandleClientEnter)
-	http.HandleFunc("/menu", menu.HandleMenuRequest)
+	http.HandleFunc("/", testapi.Hello)
+	clientorders.HandleMapping("/client-orders")
+	hostes.HandleMapping("/hostes")
+	menu.HandleMapping("/menu")
 
 	go func() {
 		http.ListenAndServe(fmt.Sprintf(":%v", httpPort), nil)

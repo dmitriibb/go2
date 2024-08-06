@@ -15,6 +15,8 @@ var managerServiceUrl = fmt.Sprintf("http://%v:%v",
 	utils.GetEnvProperty(constants.ManagerServiceUrl),
 	utils.GetEnvProperty(constants.ManagerServiceHttpPort))
 
+//TODO create or find convenient http client or wrapper
+
 func enterRestaurantRest(clientName string, clientId string) (*clientmodel.EnterRestaurantResponse, error) {
 	request := clientmodel.EnterRestaurantRequest{clientName, clientId}
 	var buf bytes.Buffer
@@ -38,4 +40,27 @@ func askForMenu() (*model.MenuDto, error) {
 	res := &model.MenuDto{}
 	err = json.NewDecoder(response.Body).Decode(res)
 	return res, err
+}
+
+func makeAnOrder(clientId string, orderItems []string) {
+	orderItemsDto := make([]model.OrderItemDTO, 0)
+	for _, item := range orderItems {
+		orderItemsDto = append(orderItemsDto, model.OrderItemDTO{DishName: item, Quantity: 1})
+	}
+	newOrderDto := model.ClientOrderDTO{ClientId: clientId, Items: orderItemsDto}
+	var buf bytes.Buffer
+	json.NewEncoder(&buf).Encode(newOrderDto)
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/client-orders", managerServiceUrl), &buf)
+	if err != nil {
+		panic(err.Error())
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer resp.Body.Close()
+
 }

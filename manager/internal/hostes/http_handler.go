@@ -12,7 +12,11 @@ import (
 
 var logger = logging.NewLogger("Hostes")
 
-func HandleClientEnter(w http.ResponseWriter, r *http.Request) {
+func HandleMapping(apiPrefix string) {
+	http.HandleFunc(fmt.Sprintf("%s/enter", apiPrefix), handleClientEnter)
+}
+
+func handleClientEnter(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		err := json.NewEncoder(w).Encode(model.CommonErrorResponse{
 			Type:    model.CommonErrorTypeWrongRequest,
