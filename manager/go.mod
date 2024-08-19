@@ -2,18 +2,19 @@ module github.com/dmitriibb/go2/manager
 
 go 1.21.4
 
-replace github.com/dmitriibb/go-common v0.0.8 => /home/dmitrii/projects/go-common
+replace github.com/dmitriibb/go-common v0.0.9 => C:\projects\go-common
 
 //replace github.com/dmitriibb/go2-kitchen v0.0.6 => /home/dmitrii/projects/go2-kitchen
 
 require (
-	github.com/dmitriibb/go-common v0.0.8
+	github.com/dmitriibb/go-common v0.0.9
 	github.com/dmitriibb/go2-kitchen v0.0.6
 	google.golang.org/grpc v1.62.0
 )
 
 require (
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	golang.org/x/net v0.21.0 // indirect

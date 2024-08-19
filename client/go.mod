@@ -4,6 +4,9 @@ go 1.21.4
 
 //replace github.com/dmitriibb/go-common v0.0.8 => /home/dmitrii/projects/go-common
 
-require github.com/dmitriibb/go-common v0.0.8
+require github.com/dmitriibb/go-common v0.0.9
 
-require github.com/joho/godotenv v1.5.1 // indirect
+require (
+	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
+)

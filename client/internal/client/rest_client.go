@@ -5,19 +5,30 @@ import (
 	"client/internal/constants"
 	"encoding/json"
 	"fmt"
+	"github.com/dmitriibb/go-common/logging"
+	"github.com/dmitriibb/go-common/restaurant-common/httputils"
 	"github.com/dmitriibb/go-common/restaurant-common/model"
 	"github.com/dmitriibb/go-common/restaurant-common/model/clientmodel"
 	"github.com/dmitriibb/go-common/utils"
 	"net/http"
+	"strings"
 )
 
 var managerServiceUrl = fmt.Sprintf("http://%v:%v",
 	utils.GetEnvProperty(constants.ManagerServiceUrl),
 	utils.GetEnvProperty(constants.ManagerServiceHttpPort))
 
+// TODO move somewhere
+var managerServiceWsUrl = fmt.Sprintf(
+	"%s%s",
+	strings.Replace(managerServiceUrl, "http://", "ws://", 1),
+	"/ws")
+
+var logger = logging.NewLogger("restClient")
+
 //TODO create or find convenient http client or wrapper
 
-func enterRestaurantRest(clientName string, clientId string) (*clientmodel.EnterRestaurantResponse, error) {
+func enterRestaurantViaRest(clientName string, clientId string) (*clientmodel.EnterRestaurantResponse, error) {
 	request := clientmodel.EnterRestaurantRequest{clientName, clientId}
 	var buf bytes.Buffer
 	json.NewEncoder(&buf).Encode(request)
@@ -31,7 +42,7 @@ func enterRestaurantRest(clientName string, clientId string) (*clientmodel.Enter
 	return responseBody, err
 }
 
-func askForMenu() (*model.MenuDto, error) {
+func askForMenuViaRest() (*model.MenuDto, error) {
 	response, err := http.Get(fmt.Sprintf("%v/menu", managerServiceUrl))
 	if err != nil {
 		return nil, err
@@ -42,7 +53,7 @@ func askForMenu() (*model.MenuDto, error) {
 	return res, err
 }
 
-func makeAnOrder(clientId string, orderItems []string) {
+func makeAnOrderViaRest(clientId string, orderItems []string) string {
 	orderItemsDto := make([]model.OrderItemDTO, 0)
 	for _, item := range orderItems {
 		orderItemsDto = append(orderItemsDto, model.OrderItemDTO{DishName: item, Quantity: 1})
@@ -58,9 +69,17 @@ func makeAnOrder(clientId string, orderItems []string) {
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
+	defer resp.Body.Close()
 	if err != nil {
 		panic(err.Error())
 	}
-	defer resp.Body.Close()
-
+	if resp.StatusCode > 299 {
+		errorResponse := httputils.GetCommonErrorResponse(resp)
+		logger.Error("client %s can't make an order because '%s'", clientId, errorResponse.Message)
+		return errorResponse.Message
+	} else {
+		orderResponse := model.ClientOrderResponseDTO{}
+		json.NewDecoder(resp.Body).Decode(&orderResponse)
+		return orderResponse.Comment
+	}
 }

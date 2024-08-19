@@ -1,6 +1,7 @@
 package client
 
 import (
+	"client/internal/client/ws"
 	"client/internal/utils"
 	"fmt"
 	"github.com/dmitriibb/go-common/logging"
@@ -40,15 +41,19 @@ func New(clientName string) Client {
 }
 
 func (c *client) Start() {
-	c.EnterRestaurant()
-	c.GoToTheTable()
-	c.AskForMenu()
-	c.MakeOrder()
-	c.WaitForOrder()
+	c.logger.Info("connection to ws %s", managerServiceWsUrl)
+	ws.ConnectToWs(c.Name, managerServiceWsUrl)
+	time.Sleep(time.Duration(1) * time.Second)
+	ws.SendMessage(c.Name, "Hello world!")
+	//c.EnterRestaurant()
+	//c.GoToTheTable()
+	//c.AskForMenu()
+	//c.MakeOrder()
+	//c.WaitForOrder()
 }
 
 func (c *client) EnterRestaurant() {
-	response, err := enterRestaurantRest(c.Name, c.Id)
+	response, err := enterRestaurantViaRest(c.Name, c.Id)
 	if err != nil {
 		c.logger.Error("can't enter restaurant because '%v'", err.Error())
 		return
@@ -72,7 +77,7 @@ func (c *client) GoToTheTable() {
 
 func (c *client) AskForMenu() {
 	c.logger.Info("asking for the menu")
-	menu, err := askForMenu()
+	menu, err := askForMenuViaRest()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -87,10 +92,15 @@ func (c *client) AskForMenu() {
 }
 
 func (c *client) MakeOrder() {
-	c.logger.Info("ordered %v", c.OrderedItems)
+	resp := makeAnOrderViaRest(c.Id, c.OrderedItems)
+	c.logger.Info("ordered %v. result - %s", c.OrderedItems, resp)
 }
 
 func (c *client) WaitForOrder() {
+	c.logger.Info("connection to ws %s", managerServiceWsUrl)
+	ws.ConnectToWs(c.Id, managerServiceWsUrl)
+	time.Sleep(time.Duration(1) * time.Second)
+	ws.SendMessage(c.Id, "Hello world!")
 	for i := 0; i < 5; i++ {
 		time.Sleep(1 * time.Second)
 		c.logger.Info("waiting for the order for %v sec", i)

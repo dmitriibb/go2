@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dmitriibb/go-common/logging"
+	"github.com/dmitriibb/go-common/restaurant-common/httputils"
 	"github.com/dmitriibb/go-common/restaurant-common/model"
 	"net/http"
 )
@@ -16,10 +17,11 @@ func HandleMapping(apiPrefix string) {
 
 func handleClientOrder(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "PUT":
+	case http.MethodPut:
 		newOrder(w, r)
 	default:
-		fmt.Fprintf(w, "Error - unsupported request method %v", r.Method)
+		message := fmt.Sprintf("Error - unsupported request method %v", r.Method)
+		httputils.ReturnResponseWithError(w, http.StatusBadRequest, loggerApiHttp, message)
 	}
 }
 
@@ -27,17 +29,13 @@ func newOrder(w http.ResponseWriter, r *http.Request) {
 	order := new(model.ClientOrderDTO)
 	if err := json.NewDecoder(r.Body).Decode(order); err != nil {
 		erMsg := fmt.Sprintf("Can't create a new order because '%v'", err.Error())
-		loggerApiHttp.Error(erMsg)
-		response := model.CommonErrorResponse{model.CommonErrorTypeInvalidData, erMsg}
-		json.NewEncoder(w).Encode(response)
+		httputils.ReturnResponseWithError(w, http.StatusInternalServerError, loggerApiHttp, erMsg)
 		return
 	}
 	defer func() {
 		if r := recover(); r != nil {
 			erMsg := fmt.Sprintf("Can't process new order because '%v'", r)
-			loggerApiHttp.Error(erMsg)
-			response := model.CommonErrorResponse{model.CommonErrorTypeInvalidData, erMsg}
-			json.NewEncoder(w).Encode(response)
+			httputils.ReturnResponseWithError(w, http.StatusInternalServerError, loggerApiHttp, erMsg)
 		}
 	}()
 	res := NewOrder(order)
