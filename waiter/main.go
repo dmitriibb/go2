@@ -10,6 +10,8 @@ import (
 	"github.com/dmitriibb/go2/waiter/workers"
 	"github.com/dmitriibb/go2/waiter/ws"
 	"net/http"
+	"os"
+	"os/signal"
 	"time"
 )
 
@@ -18,10 +20,13 @@ var httpPort = utils.GetEnvProperty(constants.HttpPortEnv)
 
 func main() {
 	mainLogger.Info("Start")
-	rootContext := context.Background()
+	rootContext, rootCancel := context.WithCancel(context.Background())
 	defer gracefulShutdown2()
 	receiver.Init(rootContext)
-	workers.Init()
+	workers.Init(rootContext)
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
 
 	// -------- for testing
 	//qConf, _ := rabbit.GetQueueConfig("test2")
@@ -45,7 +50,19 @@ func main() {
 	mainLogger.Debug("http.Listening And Serving...")
 
 	forever := make(chan int)
-	<-forever
+	for {
+		select {
+		case <-forever:
+			mainLogger.Debug("finished from forever.....")
+			return
+		case <-interrupt:
+			mainLogger.Debug("finished from interrupt.....")
+			rootCancel()
+			return
+
+		}
+	}
+
 }
 
 // TODO doesn't work
