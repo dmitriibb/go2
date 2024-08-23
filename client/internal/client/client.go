@@ -5,6 +5,7 @@ import (
 	"client/internal/utils"
 	"fmt"
 	"github.com/dmitriibb/go-common/logging"
+	"github.com/dmitriibb/go-common/restaurant-common/model"
 	"github.com/dmitriibb/go-common/restaurant-common/model/clientmodel"
 	"time"
 )
@@ -31,6 +32,7 @@ type client struct {
 	Id           string
 	TableNumber  int
 	OrderedItems []string
+	wsClient     *ws.Client
 }
 
 func New(clientName string) Client {
@@ -41,15 +43,11 @@ func New(clientName string) Client {
 }
 
 func (c *client) Start() {
-	c.logger.Info("connection to ws %s", managerServiceWsUrl)
-	ws.ConnectToWs(c.Name, managerServiceWsUrl)
-	time.Sleep(time.Duration(1) * time.Second)
-	ws.SendMessage(c.Name, "Hello world!")
 	//c.EnterRestaurant()
 	//c.GoToTheTable()
 	//c.AskForMenu()
 	//c.MakeOrder()
-	//c.WaitForOrder()
+	c.WaitForOrder()
 }
 
 func (c *client) EnterRestaurant() {
@@ -98,9 +96,11 @@ func (c *client) MakeOrder() {
 
 func (c *client) WaitForOrder() {
 	c.logger.Info("connection to ws %s", managerServiceWsUrl)
-	ws.ConnectToWs(c.Id, managerServiceWsUrl)
-	time.Sleep(time.Duration(1) * time.Second)
-	ws.SendMessage(c.Id, "Hello world!")
+	c.wsClient = ws.NewWsClient(c.Name, c)
+	c.wsClient.ConnectToManager()
+	time.Sleep(time.Duration(3) * time.Second)
+	c.logger.Info("send hello to manager")
+	c.wsClient.SendMessage("manager", "Hello manager!")
 	for i := 0; i < 5; i++ {
 		time.Sleep(1 * time.Second)
 		c.logger.Info("waiting for the order for %v sec", i)
@@ -120,4 +120,18 @@ func (c *client) Pay() {
 
 func (c *client) LeaveRestaurant() {
 	c.logger.Info("leaving")
+}
+
+func (c *client) OnNewWaiterUrl(waiterServiceUrl string) {
+	c.wsClient.ConnectToWaiter(waiterServiceUrl)
+	time.Sleep(time.Duration(3) * time.Second)
+	c.wsClient.SendMessage("waiter", "hello waiter!")
+}
+
+func (c *client) OnReadyOrderItem(item *model.ReadyOrderItem) {
+	c.logger.Info("received ready order item %+v", item)
+}
+
+func (c *client) OnError(err error) {
+	c.logger.Error("on ws error - %v", err.Error())
 }

@@ -27,7 +27,7 @@ func handleWsConnection(w http.ResponseWriter, r *http.Request) {
 // actually the function is used. Idea just can't see that
 func handleWsMessagesFromClient(client *ws.ClientHandler, message ws.Message) {
 	if message.Type == ws.MessageTypeString {
-		client.SendMessage(ws.Message{ws.MessageTypeString, "ws://localhost:9030/ws"})
+		client.SendMessage(ws.Message{ws.MessageTypeString, "Hello fromm waiter service"})
 	} else {
 		logger.Warn("unexpected ws message type '%v' from %v", message.Type, client.ClientId)
 	}

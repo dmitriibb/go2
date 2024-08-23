@@ -8,20 +8,18 @@ import (
 	"github.com/dmitriibb/go-common/utils"
 	"github.com/dmitriibb/go2/waiter/receiver"
 	"github.com/dmitriibb/go2/waiter/workers"
+	"github.com/dmitriibb/go2/waiter/ws"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 )
 
-var maiLogger = logging.NewLogger("Waiter - Main")
+var mainLogger = logging.NewLogger("Waiter - Main")
 var httpPort = utils.GetEnvProperty(constants.HttpPortEnv)
 
 func main() {
-	maiLogger.Info("Start")
-	rootContext, cancel := context.WithCancel(context.Background())
-	go gracefulShutdown(rootContext, cancel)
+	mainLogger.Info("Start")
+	rootContext := context.Background()
+	defer gracefulShutdown2()
 	receiver.Init(rootContext)
 	workers.Init()
 
@@ -38,28 +36,44 @@ func main() {
 	//}()
 
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		maiLogger.Info("dummy http request")
+		mainLogger.Info("dummy http request")
 	})
-	http.ListenAndServe(fmt.Sprintf(":%v", httpPort), nil)
+	ws.HandleMapping("/ws")
+	go func() {
+		http.ListenAndServe(fmt.Sprintf(":%v", httpPort), nil)
+	}()
+	mainLogger.Debug("http.Listening And Serving...")
+
+	forever := make(chan int)
+	<-forever
 }
 
 // TODO doesn't work
-func gracefulShutdown(rootContext context.Context, rootContextCancelFunc context.CancelFunc) {
-	s := make(chan os.Signal, 1)
-	signal.Notify(s, os.Interrupt)
-	signal.Notify(s, syscall.SIGTERM)
-	waitForCleanupFunc := context.AfterFunc(rootContext, func() {
-		fmt.Println("Shut down in.")
-		for i := 5; i > 0; i-- {
-			fmt.Printf("Shut down in %v...\n", i)
-			time.Sleep(time.Second)
-		}
-	})
-	go func() {
-		<-s
-		fmt.Println("Shutting down gracefully.")
-		rootContextCancelFunc()
-		waitForCleanupFunc()
-		os.Exit(0)
-	}()
+//func gracefulShutdown(rootContext context.Context, rootContextCancelFunc context.CancelFunc) {
+//	s := make(chan os.Signal, 1)
+//	signal.Notify(s, os.Interrupt)
+//	signal.Notify(s, syscall.SIGTERM)
+//	waitForCleanupFunc := context.AfterFunc(rootContext, func() {
+//		fmt.Println("Shut down in.")
+//		for i := 5; i > 0; i-- {
+//			fmt.Printf("Shut down in %v...\n", i)
+//			time.Sleep(time.Second)
+//		}
+//	})
+//	go func() {
+//		<-s
+//		fmt.Println("Shutting down gracefully.")
+//		rootContextCancelFunc()
+//		waitForCleanupFunc()
+//		os.Exit(0)
+//	}()
+//}
+
+func gracefulShutdown2() {
+	fmt.Println("Shut down in.")
+	for i := 5; i > 0; i-- {
+		fmt.Printf("Shut down in %v...\n", i)
+		time.Sleep(time.Second)
+	}
+	fmt.Println("Shutting down gracefully.")
 }

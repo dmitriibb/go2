@@ -2,9 +2,10 @@ module client
 
 go 1.21.4
 
-//replace github.com/dmitriibb/go-common v0.0.8 => /home/dmitrii/projects/go-common
+//replace github.com/dmitriibb/go-common v0.0.9 => /home/dmitrii/projects/go-common
+//replace github.com/dmitriibb/go-common v0.0.10 => C:\projects\go-common
 
-require github.com/dmitriibb/go-common v0.0.9
+require github.com/dmitriibb/go-common v0.1.0
 
 require (
 	github.com/gorilla/websocket v1.5.3 // indirect
