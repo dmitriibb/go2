@@ -1,6 +1,7 @@
 package clientorders
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/dmitriibb/go-common/db/pg"
 	"github.com/dmitriibb/go-common/logging"
@@ -9,6 +10,7 @@ import (
 
 var loggerRepo = logging.NewLogger("ordersRepository")
 
+// for unit tests
 var SaveOrderInDb = saveOrderInDb
 var SaveOrderItemInDb = saveOrderItemInDb
 
@@ -50,4 +52,19 @@ func saveOrderItemInDb(txWrapper pg.TxWrapperer, orderItem ClientOrderItem) (*Cl
 	}
 	orderItem.ItemId = id
 	return &orderItem, err
+}
+
+func getClientIdByOrderIdFromDb(orderId int) string {
+	query := `select client_id from client_order_items where client_order_id = $1 limit 1`
+	var res string
+	pg.UseConnection(func(db *sql.DB) any {
+		row := db.QueryRow(query, orderId)
+		err := row.Scan(&res)
+		if err != nil {
+			loggerRepo.Error("can't getClientIdByOrderIdFromDb because %v", err.Error())
+			res = ""
+		}
+		return nil
+	})
+	return res
 }

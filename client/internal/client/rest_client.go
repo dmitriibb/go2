@@ -11,18 +11,11 @@ import (
 	"github.com/dmitriibb/go-common/restaurant-common/model/clientmodel"
 	"github.com/dmitriibb/go-common/utils"
 	"net/http"
-	"strings"
 )
 
 var managerServiceUrl = fmt.Sprintf("http://%v:%v",
 	utils.GetEnvProperty(constants.ManagerServiceUrl),
 	utils.GetEnvProperty(constants.ManagerServiceHttpPort))
-
-// TODO move somewhere
-var managerServiceWsUrl = fmt.Sprintf(
-	"%s%s",
-	strings.Replace(managerServiceUrl, "http://", "ws://", 1),
-	"/ws")
 
 var logger = logging.NewLogger("restClient")
 

@@ -89,6 +89,7 @@ func NewOrder(orderApi *model.ClientOrderDTO) *model.ClientOrderResponseDTO {
 	return &model.ClientOrderResponseDTO{"Success"}
 }
 
+// SendNewOrderEvent - for unit tests
 var SendNewOrderEvent = sendNewOrderEvent
 
 func sendNewOrderEvent(ctx context.Context, ctxCancel context.CancelFunc, order *ClientOrder) {

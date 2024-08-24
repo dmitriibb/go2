@@ -1,8 +1,10 @@
 package ws
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/dmitriibb/go-common/logging"
+	"github.com/dmitriibb/go-common/restaurant-common/model"
 	"github.com/dmitriibb/go-common/ws"
 	"net/http"
 )
@@ -24,11 +26,22 @@ func handleWsConnection(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// actually the function is used. Idea just can't see that
 func handleWsMessagesFromClient(client *ws.ClientHandler, message ws.Message) {
 	if message.Type == ws.MessageTypeString {
 		client.SendMessage(ws.Message{ws.MessageTypeString, "Hello fromm waiter service"})
 	} else {
 		logger.Warn("unexpected ws message type '%v' from %v", message.Type, client.ClientId)
 	}
+}
+
+func SendReadyOrderItemToClient(clientId string, item *model.ReadyOrderItem) {
+	client, ok := clientIdToConnection[clientId]
+	if !ok {
+		logger.Error("no ws connection for client %v", client)
+		// TODO retry for failed order item delivery
+		return
+	}
+	msgJson, _ := json.Marshal(item)
+	msgString := string(msgJson)
+	client.SendMessage(ws.Message{Type: model.WsMessageTypeReadyOrderItem, Payload: msgString})
 }

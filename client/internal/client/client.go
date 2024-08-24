@@ -21,7 +21,7 @@ type Client interface {
 	AskForMenu()
 	MakeOrder()
 	WaitForOrder()
-	Eat()
+	Eat(dishName string)
 	Pay()
 	LeaveRestaurant()
 }
@@ -43,10 +43,10 @@ func New(clientName string) Client {
 }
 
 func (c *client) Start() {
-	//c.EnterRestaurant()
-	//c.GoToTheTable()
-	//c.AskForMenu()
-	//c.MakeOrder()
+	c.EnterRestaurant()
+	c.GoToTheTable()
+	c.AskForMenu()
+	c.MakeOrder()
 	c.WaitForOrder()
 }
 
@@ -62,6 +62,7 @@ func (c *client) EnterRestaurant() {
 	}
 
 	c.TableNumber = response.TableNumber
+	c.Id = response.ClientId
 	c.logger.Info("enter restaurant. Assigned id '%v', assigned table ", response.ClientId, response.TableNumber)
 }
 
@@ -95,22 +96,20 @@ func (c *client) MakeOrder() {
 }
 
 func (c *client) WaitForOrder() {
-	c.logger.Info("connection to ws %s", managerServiceWsUrl)
-	c.wsClient = ws.NewWsClient(c.Name, c)
+	c.wsClient = ws.NewWsClient(c.Id, c)
 	c.wsClient.ConnectToManager()
-	time.Sleep(time.Duration(3) * time.Second)
-	c.logger.Info("send hello to manager")
 	c.wsClient.SendMessage("manager", "Hello manager!")
-	for i := 0; i < 5; i++ {
-		time.Sleep(1 * time.Second)
-		c.logger.Info("waiting for the order for %v sec", i)
-	}
+	c.logger.Info("waiting for the order...")
+	//for i := 0; i < 5; i++ {
+	//	time.Sleep(1 * time.Second)
+	//	c.logger.Info("waiting for the order for %v sec", i)
+	//}
 }
 
-func (c *client) Eat() {
+func (c *client) Eat(dishName string) {
 	for i := 0; i < 5; i++ {
 		time.Sleep(1 * time.Second)
-		c.logger.Info("eating...")
+		c.logger.Info("eating %v...", dishName)
 	}
 }
 
@@ -122,14 +121,15 @@ func (c *client) LeaveRestaurant() {
 	c.logger.Info("leaving")
 }
 
+// Implement ws listener
 func (c *client) OnNewWaiterUrl(waiterServiceUrl string) {
 	c.wsClient.ConnectToWaiter(waiterServiceUrl)
-	time.Sleep(time.Duration(3) * time.Second)
 	c.wsClient.SendMessage("waiter", "hello waiter!")
 }
 
 func (c *client) OnReadyOrderItem(item *model.ReadyOrderItem) {
 	c.logger.Info("received ready order item %+v", item)
+	c.Eat(item.DishName)
 }
 
 func (c *client) OnError(err error) {
