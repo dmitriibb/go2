@@ -22,6 +22,7 @@ func handleWsConnection(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("can't handle new ws connection because '%v'", err.Error())
 	} else {
+		logger.Debug("'%v' connected to ws", clientHandler.ClientId)
 		clientIdToConnection[clientHandler.ClientId] = clientHandler
 	}
 }
@@ -37,7 +38,7 @@ func handleWsMessagesFromClient(client *ws.ClientHandler, message ws.Message) {
 func SendReadyOrderItemToClient(clientId string, item *model.ReadyOrderItem) {
 	client, ok := clientIdToConnection[clientId]
 	if !ok {
-		logger.Error("no ws connection for client %v", client)
+		logger.Error("no ws connection for client %v", clientId)
 		// TODO retry for failed order item delivery
 		return
 	}

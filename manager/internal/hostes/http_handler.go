@@ -6,14 +6,25 @@ import (
 	"github.com/dmitriibb/go-common/logging"
 	"github.com/dmitriibb/go-common/restaurant-common/model"
 	"github.com/dmitriibb/go-common/restaurant-common/model/clientmodel"
-	"math/rand"
+	"github.com/dmitriibb/go-common/utils/webUtils"
 	"net/http"
 )
 
 var logger = logging.NewLogger("Hostes")
 
 func HandleMapping(apiPrefix string) {
-	http.HandleFunc(fmt.Sprintf("%s/enter", apiPrefix), handleClientEnter)
+	http.HandleFunc(fmt.Sprintf("%s/enter", apiPrefix), handleClientEnterRequest)
+}
+
+func handleClientEnterRequest(w http.ResponseWriter, r *http.Request) {
+	webUtils.EnableCors(w)
+	switch r.Method {
+	case http.MethodOptions:
+		webUtils.HandleOptionsRequest(w, "*", "OPTIONS, POST")
+		return
+	case http.MethodPost:
+		handleClientEnter(w, r)
+	}
 }
 
 func handleClientEnter(w http.ResponseWriter, r *http.Request) {
@@ -56,18 +67,4 @@ func handleClientEnter(w http.ResponseWriter, r *http.Request) {
 	} else {
 		logger.Info("Welcome %v and forward him to the table %v", response.ClientId, tableNumber)
 	}
-}
-
-func generateIdForClient(clientName string) string {
-	id := fmt.Sprintf("%v-%v", clientName, rand.Int())
-	logger.Debug("assign id %v to client '%v'", id, clientName)
-	// TODO save id to the database
-	return id
-}
-
-func getAvailableTableNumber(clientId string) int {
-	id := rand.Int()
-	logger.Debug("assign table %v to client '%v'", id, clientId)
-	// TODO manage available tables
-	return id
 }

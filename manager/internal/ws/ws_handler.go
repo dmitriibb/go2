@@ -3,6 +3,7 @@ package ws
 import (
 	"fmt"
 	"github.com/dmitriibb/go-common/logging"
+	"github.com/dmitriibb/go-common/utils/webUtils"
 	"github.com/dmitriibb/go-common/ws"
 	"net/http"
 )
@@ -16,6 +17,7 @@ func HandleMapping(apiPrefix string) {
 }
 
 func handleWsConnection(w http.ResponseWriter, r *http.Request) {
+	webUtils.EnableCors(w)
 	clientHandler, err := ws.NewClientHandler(w, r, handleWsMessagesFromClient)
 	if err != nil {
 		logger.Error("can't handle new ws connection because '%v'", err.Error())

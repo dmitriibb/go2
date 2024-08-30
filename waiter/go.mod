@@ -2,10 +2,12 @@ module github.com/dmitriibb/go2/waiter
 
 go 1.21.4
 
+//replace github.com/dmitriibb/go-common v0.1.1 => C:\projects\go-common
+
 //replace github.com/dmitriibb/go-common v0.0.8 => /home/dmitrii/projects/go-common
 
 require (
-	github.com/dmitriibb/go-common v0.1.0
+	github.com/dmitriibb/go-common v0.1.2
 	github.com/rabbitmq/amqp091-go v1.9.0
 )
 

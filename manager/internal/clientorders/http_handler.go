@@ -6,6 +6,7 @@ import (
 	"github.com/dmitriibb/go-common/logging"
 	"github.com/dmitriibb/go-common/restaurant-common/httputils"
 	"github.com/dmitriibb/go-common/restaurant-common/model"
+	"github.com/dmitriibb/go-common/utils/webUtils"
 	"net/http"
 	"strconv"
 )
@@ -13,11 +14,14 @@ import (
 var loggerApiHttp = logging.NewLogger("testapi.http.client.orders")
 
 func HandleMapping(apiPrefix string) {
-	http.HandleFunc(apiPrefix, handleClientOrder)
+	http.HandleFunc(apiPrefix, handleClientOrderRequest)
 }
 
-func handleClientOrder(w http.ResponseWriter, r *http.Request) {
+func handleClientOrderRequest(w http.ResponseWriter, r *http.Request) {
+	webUtils.EnableCors(w)
 	switch r.Method {
+	case http.MethodOptions:
+		webUtils.HandleOptionsRequest(w, "*", "OPTIONS, PUT, GET")
 	case http.MethodPut:
 		newOrder(w, r)
 	case http.MethodGet:
